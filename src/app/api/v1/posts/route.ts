@@ -78,10 +78,37 @@ export const GET = (req: Request) =>
  *       409:
  *         description: Slug already exists
  */
-export const POST = async (req: Request) =>
-  handle(async () => {
-    const body = await req.json();
-    const data = schemas.createPostSchema.parse(body);
-    const post = await service.createPost(data);
-    return successResponse(post, { status: 201 });
-  });
+export async function POST(req: NextRequest) {
+  if (!isAuthor(req)) {
+    return NextResponse.json({ data: null, error: { message: 'Unauthorized' } }, { status: 401 });
+  }
+
+  const json = await req.json().catch(() => null);
+  const parsed = CreatePostDto.safeParse(json);
+  if (!parsed.success) {
+    return NextResponse.json({ data: null, error: { message: 'Validation error' } }, { status: 400 });
+  }
+
+  const { title, content, status, publishAt, slug } = parsed.data;
+  const finalSlug = slug ?? slugify(title);
+
+  try {
+    const post = await prisma.post.create({
+      data: {
+        title,
+        content,
+        status,
+        slug: finalSlug,
+        publishAt: publishAt ? new Date(publishAt) : null,
+      },
+    });
+    return NextResponse.json({ data: post, error: null }, { status: 201 });
+  } catch (e: any) {
+    // Prisma unique constraint on slug → conflict
+    if (e?.code === 'P2002') {
+      return NextResponse.json({ data: null, error: { message: 'Slug already exists' } }, { status: 409 });
+    }
+    return NextResponse.json({ data: null, error: { message: 'Server error' } }, { status: 500 });
+  }
+}
+

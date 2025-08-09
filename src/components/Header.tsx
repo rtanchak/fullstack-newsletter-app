@@ -39,7 +39,7 @@ export default function Header() {
         </Toolbar>
       </AppBar>
       <Box sx={{ 
-        height: '8px', 
+        height: '8px',
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.03), rgba(0,0,0,0))',
         mb: 3 
       }} />
