@@ -1,25 +1,25 @@
-import NextLink from "next/link"
-import { getPublishedPosts } from "@/modules/posts/posts.service"
-import { Container, Typography, Box, Paper, Link, Button } from "@mui/material"
-import { format } from "date-fns"
+import NextLink from "next/link";
+import { getPublishedPosts } from "@/modules/posts/posts.service";
+import { Container, Typography, Box, Paper, Link, Button } from "@mui/material";
+import { format } from "date-fns";
 
-export const revalidate = 60
+export const revalidate = 60;
 
 type Props = {
   searchParams?: Promise<{ page?: string; limit?: string }>
-}
+};
 
 export default async function HomePage({ searchParams }: Props) {
-  const resolvedParams = await searchParams || {}
+  const resolvedParams = await searchParams || {};
   
-  const pageParam = typeof resolvedParams.page === 'string' ? resolvedParams.page : '1'
-  const limitParam = typeof resolvedParams.limit === 'string' ? resolvedParams.limit : '10'
+  const pageParam = typeof resolvedParams.page === 'string' ? resolvedParams.page : '1';
+  const limitParam = typeof resolvedParams.limit === 'string' ? resolvedParams.limit : '10';
 
-  const page = Math.max(1, Number(pageParam))
-  const limit = Math.min(50, Math.max(1, Number(limitParam)))
+  const page = Math.max(1, Number(pageParam));
+  const limit = Math.min(50, Math.max(1, Number(limitParam)));
 
-  const { items, total } = await getPublishedPosts(page, limit)
-  const totalPages = Math.max(1, Math.ceil(total / limit))
+  const { items, total } = await getPublishedPosts(page, limit);
+  const totalPages = Math.max(1, Math.ceil(total / limit));
 
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
@@ -111,5 +111,5 @@ export default async function HomePage({ searchParams }: Props) {
         </Box>
       </Paper>
     </Container>
-  )
+  );
 }

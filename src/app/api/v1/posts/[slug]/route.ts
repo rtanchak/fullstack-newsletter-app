@@ -1,5 +1,5 @@
-import { handle, successResponse, errorResponse } from "@/lib/api"
-import { getPublishedPost } from "@/modules/posts/posts.service"
+import { handle, successResponse, errorResponse } from "@/lib/api";
+import { getPublishedPost } from "@/modules/posts/posts.service";
 
 /**
  * @swagger
@@ -25,7 +25,7 @@ import { getPublishedPost } from "@/modules/posts/posts.service"
 
 export const GET = (req: Request, { params }: { params: { slug: string } }) =>
   handle(async () => {
-    const post = await getPublishedPost(params.slug)
-    if (!post) return errorResponse("Post not found", 404, "NOT_FOUND")
-    return successResponse({ ...post, publishedAt: post.publishedAt?.toISOString() ?? null })
-  })
+    const post = await getPublishedPost(params.slug);
+    if (!post) return errorResponse("Post not found", 404, "NOT_FOUND");
+    return successResponse({ ...post, publishedAt: post.publishedAt?.toISOString() ?? null });
+  });

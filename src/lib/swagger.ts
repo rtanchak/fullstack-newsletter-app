@@ -1,4 +1,4 @@
-import { createSwaggerSpec } from "next-swagger-doc"
+import { createSwaggerSpec } from "next-swagger-doc";
 
 export const getApiDocs = () => {
   return createSwaggerSpec({
@@ -20,5 +20,5 @@ export const getApiDocs = () => {
         },
       },
     },
-  })
+  });
 }

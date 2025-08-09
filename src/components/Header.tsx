@@ -1,7 +1,7 @@
-"use client"
+"use client";
 
-import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material"
-import Link from "next/link"
+import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
+import Link from "next/link";
 
 export default function Header() {
   return (
@@ -44,5 +44,5 @@ export default function Header() {
         mb: 3 
       }} />
     </>
-  )
+  );
 }

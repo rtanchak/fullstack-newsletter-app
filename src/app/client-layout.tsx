@@ -1,9 +1,9 @@
-"use client"
+"use client";
 
-import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter"
-import { CssBaseline, ThemeProvider, createTheme } from "@mui/material"
-import Providers from "./providers"
-import Header from "@/components/Header"
+import { AppRouterCacheProvider } from "@mui/material-nextjs/v14-appRouter";
+import { CssBaseline, ThemeProvider, createTheme } from "@mui/material";
+import Providers from "./providers";
+import Header from "@/components/Header";
 
 const theme = createTheme({
   typography: {
@@ -38,7 +38,7 @@ const theme = createTheme({
       `,
     },
   },
-})
+});
 
 export default function ClientLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -51,5 +51,5 @@ export default function ClientLayout({ children }: { children: React.ReactNode }
         </Providers>
       </ThemeProvider>
     </AppRouterCacheProvider>
-  )
+  );
 }
