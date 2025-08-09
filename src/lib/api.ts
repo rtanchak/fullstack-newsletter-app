@@ -1,4 +1,4 @@
-import { NextResponse } from "next/server";
+import { NextResponse, NextRequest } from "next/server";
 import { ZodError } from "zod";
 
 export type ApiEnvelope<T> = { data: T; error: null } | { data: null; error: { message: string; code?: string } };
@@ -33,8 +33,8 @@ export function errorResponse(message: string, status = 400, code = "BAD_REQUEST
   return NextResponse.json({ data: null, error: { message, code } } as ApiEnvelope<null>, { status });
 }
 
-export function handle<T>(fn: (req: Request) => Promise<T>) {
-  return async (req: Request) => {
+export function handle<T>(fn: (req: NextRequest) => Promise<T>) {
+  return async (req: NextRequest) => {
     try {
       const result = await fn(req);
       if (result instanceof NextResponse) return result;

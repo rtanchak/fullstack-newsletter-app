@@ -1,8 +1,6 @@
 import { handle, successResponse, createdResponse } from "@/lib/api";
 import { service, schemas } from "@/modules/posts";
 import { NextRequest } from "next/server";
-import { isAuthor } from "@/lib/auth";
-import { ApiError } from "@/lib/api";
 
 /**
  * @swagger
@@ -34,8 +32,7 @@ import { ApiError } from "@/lib/api";
  *       500:
  *         description: Server error.
  */
-export const GET = (req: Request) =>
-  handle(async () => {
+export const GET = handle(async (req: NextRequest) => {
     const { searchParams } = new URL(req.url);
     const page = Math.max(1, Number(searchParams.get("page") ?? "1"));
     const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") ?? "10")));
@@ -51,7 +48,7 @@ export const GET = (req: Request) =>
  *   post:
  *     tags:
  *       - Posts
- *     summary: Create a new post Author only
+ *     summary: Create a new post
  *     description: Creates a draft or published post.
  *     requestBody:
  *       required: true
@@ -76,23 +73,16 @@ export const GET = (req: Request) =>
  *     responses:
  *       201:
  *         description: Created
- *       401:
- *         description: Unauthorized
  *       400:
  *         description: Validation error
  *       409:
  *         description: Slug already exists
  */
-export const POST = (req: NextRequest) =>
-  handle(async () => {
-    if (!isAuthor(req)) {
-      throw new ApiError("Unauthorized", 401, "UNAUTHORIZED");
-    }
-    
-    const body = await req.json();
-    const data = schemas.createPostSchema.parse(body);
-    const post = await service.createPost(data);
-    
-    return createdResponse(post);
-  });
+export const POST = handle(async (req: NextRequest) => {
+  const body = await req.json();
+  const data = schemas.createPostSchema.parse(body);
+  const post = await service.createPost(data);
+  
+  return createdResponse(post);
+});
 
