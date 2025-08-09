@@ -1,5 +1,5 @@
 import { handle, successResponse } from "@/lib/api"
-import { findPublishedPosts } from "@/modules/posts/posts.repository"
+import { getPublishedPosts } from "@/modules/posts/posts.service"
 
 /**
  * @swagger
@@ -37,7 +37,7 @@ export const GET = (req: Request) =>
     const page = Math.max(1, Number(searchParams.get("page") ?? "1"))
     const limit = Math.min(50, Math.max(1, Number(searchParams.get("limit") ?? "10")))
 
-    const { items, total } = await findPublishedPosts(page, limit)
+    const { items, total } = await getPublishedPosts(page, limit)
 
     return successResponse(items, { meta: { page, limit, total } })
   })

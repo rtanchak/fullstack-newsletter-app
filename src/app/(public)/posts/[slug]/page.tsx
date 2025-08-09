@@ -1,14 +1,14 @@
 // src/app/(public)/[slug]/page.tsx
 import { notFound } from "next/navigation"
 import { format } from "date-fns"
-import { findPublishedPostBySlug } from "@/modules/posts/posts.repository"
+import { getPublishedPost } from "@/modules/posts/posts.service"
 
 type Props = { params: { slug: string } }
 
 export const revalidate = 60
 
 export default async function PostPage({ params }: Props) {
-  const post = await findPublishedPostBySlug(params.slug)
+  const post = await getPublishedPost(params.slug)
 
   if (!post) notFound()
 
