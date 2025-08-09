@@ -2,7 +2,11 @@
 
 import { useState } from "react";
 
-export function SubscribeForm() {
+interface SubscribeFormProps {
+  onSuccess?: (email: string) => void;
+}
+
+export function SubscribeForm({ onSuccess }: SubscribeFormProps) {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [ok, setOk] = useState(false);
@@ -25,6 +29,10 @@ export function SubscribeForm() {
 
       setOk(true);
       setEmail("");
+      
+      if (onSuccess) {
+        onSuccess(email);
+      }
     } catch (e: any) {
       setErr(e.message || "Something went wrong;");
     } finally {

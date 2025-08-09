@@ -3,10 +3,13 @@
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
+import { useState } from "react";
+import { SubscribeModal } from "./SubscribeModal";
 
 export default function Header() {
   const router = useRouter();
   const pathname = usePathname();
+  const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
   
   const isOnNewPostPage = pathname === '/posts/new';
   
@@ -16,6 +19,14 @@ export default function Header() {
     } else {
       router.push('/posts/new');
     }
+  };
+  
+  const handleOpenSubscribeModal = () => {
+    setSubscribeModalOpen(true);
+  };
+  
+  const handleCloseSubscribeModal = () => {
+    setSubscribeModalOpen(false);
   };
   return (
     <>
@@ -38,14 +49,22 @@ export default function Header() {
           >
             fullstack-newsletter-app
           </Typography>
-          <Box>
-            <Button 
+          <Box sx={{ display: 'flex', gap: 2 }}>
+          <Button 
               color="primary" 
               variant="outlined"
               onClick={handleCreatePost}
               sx={{ borderRadius: '4px', px: 3, minWidth: '120px' }}
             >
               {isOnNewPostPage ? 'Home' : 'Create Post'}
+            </Button>
+            <Button 
+              color="success" 
+              variant="contained"
+              onClick={handleOpenSubscribeModal}
+              sx={{ borderRadius: '4px', px: 3 }}
+            >
+              Subscribe
             </Button>
           </Box>
         </Toolbar>
@@ -55,6 +74,10 @@ export default function Header() {
         background: 'linear-gradient(to bottom, rgba(0,0,0,0.03), rgba(0,0,0,0))',
         mb: 3 
       }} />
+      <SubscribeModal 
+        open={subscribeModalOpen} 
+        onClose={handleCloseSubscribeModal} 
+      />
     </>
   );
 }
