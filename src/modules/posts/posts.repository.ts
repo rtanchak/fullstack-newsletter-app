@@ -1,4 +1,3 @@
-// src/modules/posts/repo.ts
 import { prisma } from "@/lib/prisma";
 import { PostStatus } from "@prisma/client";
 
@@ -25,7 +24,7 @@ export async function findPublishedPosts(page = 1, limit = 10) {
 
 export async function findPublishedPostBySlug(slug: string) {
   return prisma.post.findFirst({
-    where: { slug, status: "PUBLISHED", publishedAt: { lte: new Date() } },
+    where: { slug, status: PostStatus.PUBLISHED, publishedAt: { lte: new Date() } },
     select: { id: true, title: true, slug: true, content: true, publishedAt: true, createdAt: true, updatedAt: true },
   });
 }

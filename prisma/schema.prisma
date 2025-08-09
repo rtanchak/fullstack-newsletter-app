@@ -15,17 +15,29 @@ datasource db {
 }
 
 model Post {
-  id          String   @id @default(cuid())
+  id          String     @id @default(cuid())
   title       String
-  slug        String   @unique
+  slug        String     @unique
   content     String
   status      PostStatus @default(DRAFT)
+  author      String     @default("newsletter-app-editor")
   publishedAt DateTime?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
 }
 
 enum PostStatus {
   DRAFT
   PUBLISHED
+  SCHEDULED
+}
+
+model Subscriber {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  active    Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([active])
 }

@@ -1,5 +1,8 @@
-import { handle, successResponse } from "@/lib/api";
+import { handle, successResponse, createdResponse } from "@/lib/api";
 import { service, schemas } from "@/modules/posts";
+import { NextRequest } from "next/server";
+import { isAuthor } from "@/lib/auth";
+import { ApiError } from "@/lib/api";
 
 /**
  * @swagger
@@ -48,7 +51,7 @@ export const GET = (req: Request) =>
  *   post:
  *     tags:
  *       - Posts
- *     summary: Create a new post
+ *     summary: Create a new post Author only
  *     description: Creates a draft or published post.
  *     requestBody:
  *       required: true
@@ -73,42 +76,23 @@ export const GET = (req: Request) =>
  *     responses:
  *       201:
  *         description: Created
+ *       401:
+ *         description: Unauthorized
  *       400:
  *         description: Validation error
  *       409:
  *         description: Slug already exists
  */
-export async function POST(req: NextRequest) {
-  if (!isAuthor(req)) {
-    return NextResponse.json({ data: null, error: { message: 'Unauthorized' } }, { status: 401 });
-  }
-
-  const json = await req.json().catch(() => null);
-  const parsed = CreatePostDto.safeParse(json);
-  if (!parsed.success) {
-    return NextResponse.json({ data: null, error: { message: 'Validation error' } }, { status: 400 });
-  }
-
-  const { title, content, status, publishAt, slug } = parsed.data;
-  const finalSlug = slug ?? slugify(title);
-
-  try {
-    const post = await prisma.post.create({
-      data: {
-        title,
-        content,
-        status,
-        slug: finalSlug,
-        publishAt: publishAt ? new Date(publishAt) : null,
-      },
-    });
-    return NextResponse.json({ data: post, error: null }, { status: 201 });
-  } catch (e: any) {
-    // Prisma unique constraint on slug → conflict
-    if (e?.code === 'P2002') {
-      return NextResponse.json({ data: null, error: { message: 'Slug already exists' } }, { status: 409 });
+export const POST = (req: NextRequest) =>
+  handle(async () => {
+    if (!isAuthor(req)) {
+      throw new ApiError("Unauthorized", 401, "UNAUTHORIZED");
     }
-    return NextResponse.json({ data: null, error: { message: 'Server error' } }, { status: 500 });
-  }
-}
+    
+    const body = await req.json();
+    const data = schemas.createPostSchema.parse(body);
+    const post = await service.createPost(data);
+    
+    return createdResponse(post);
+  });
 

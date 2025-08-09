@@ -2,14 +2,13 @@
 
 import * as React from 'react';
 import { useRouter } from 'next/navigation';
-
-type Status = 'DRAFT' | 'SCHEDULED' | 'PUBLISHED';
+import { PostStatus } from '@prisma/client';
 
 export default function NewPostPage() {
   const router = useRouter();
   const [title, setTitle] = React.useState('');
   const [content, setContent] = React.useState('');
-  const [status, setStatus] = React.useState<Status>('DRAFT');
+  const [status, setStatus] = React.useState<PostStatus>(PostStatus.DRAFT);
   const [publishAt, setPublishAt] = React.useState<string>(''); // ISO-local
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
@@ -21,7 +20,7 @@ export default function NewPostPage() {
 
     try {
       const body: Record<string, any> = { title, content, status };
-      if (status === 'SCHEDULED' && publishAt) body.publishAt = new Date(publishAt).toISOString();
+      // if (status === PostStatus.SCHEDULED && publishAt) body.publishAt = new Date(publishAt).toISOString();
 
       const res = await fetch('/api/v1/posts', {
         method: 'POST',
@@ -46,11 +45,24 @@ export default function NewPostPage() {
     }
   }
 
+  async function handleLogout() {
+    try {
+      await fetch('/api/v1/author/logout', {
+        method: 'POST',
+      });
+      router.push('/author/login');
+    } catch (err) {
+      console.error('Logout failed', err);
+    }
+  }
+
   return (
     <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }}>
-      <h1 style={{ marginBottom: 8 }}>Create Post;</h1>
-      <p style={{ color: '#6b7280', marginBottom: 16 }}>
-        Fill in the fields and submit to create a draft, schedule, or publish now;
+      <div style={{ marginBottom: 16 }}>
+        <h1 style={{ margin: 0 }}>Create Post</h1>
+      </div>
+      <p style={{ color: '#6b7280', marginBottom: 24 }}>
+        Fill in the fields and submit to create a draft, schedule, or publish now.
       </p>
 
       <form onSubmit={onSubmit}>
@@ -76,7 +88,7 @@ export default function NewPostPage() {
         <label style={{ display: 'block', margin: '16px 0 6px' }}>Status;</label>
         <select
           value={status}
-          onChange={(e) => setStatus(e.target.value as Status)}
+          onChange={(e) => setStatus(e.target.value as PostStatus)}
           style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
         >
           <option value="DRAFT">DRAFT</option>
@@ -84,7 +96,7 @@ export default function NewPostPage() {
           <option value="PUBLISHED">PUBLISHED</option>
         </select>
 
-        {status === 'SCHEDULED' && (
+        {/* {status === PostStatus.SCHEDULED && (
           <>
             <label style={{ display: 'block', margin: '16px 0 6px' }}>Publish At (local datetime);</label>
             <input
@@ -94,13 +106,14 @@ export default function NewPostPage() {
               style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
             />
           </>
-        )}
+        )} */}
 
         {error && <div style={{ color: '#b91c1c', marginTop: 12 }}>{error}</div>}
 
         <button
           type="submit"
-          disabled={loading || !title || !content || (status === 'SCHEDULED' && !publishAt)}
+          // disabled={loading || !title || !content || (status === PostStatus.SCHEDULED && !publishAt)}
+          disabled={loading || !title || !content}
           style={{
             marginTop: 18,
             padding: '10px 14px',

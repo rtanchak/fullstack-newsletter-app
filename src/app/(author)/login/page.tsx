@@ -6,7 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 export default function AuthorLoginPage() {
   const router = useRouter();
   const search = useSearchParams();
-  const next = search.get('next') || '/author/posts/new';
+  const next = search.get('next') || '/posts/new';
 
   const [key, setKey] = React.useState('');
   const [loading, setLoading] = React.useState(false);
@@ -17,7 +17,7 @@ export default function AuthorLoginPage() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch('/api/author/login', {
+      const res = await fetch('/api/v1/author/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ key }),

@@ -33,22 +33,24 @@ export function errorResponse(message: string, status = 400, code = "BAD_REQUEST
   return NextResponse.json({ data: null, error: { message, code } } as ApiEnvelope<null>, { status });
 }
 
-export async function handle<T>(fn: () => Promise<T>) {
-  try {
-    const result = await fn();
-    if (result instanceof NextResponse) return result;
-    return successResponse(result as T);
-  } catch (err: unknown) {
-    if (err instanceof ZodError) {
-      return NextResponse.json(
-        { data: null, error: { message: "Validation error", code: "VALIDATION_ERROR", issues: err.issues } },
-        { status: 400 }
-      );
+export function handle<T>(fn: (req: Request) => Promise<T>) {
+  return async (req: Request) => {
+    try {
+      const result = await fn(req);
+      if (result instanceof NextResponse) return result;
+      return successResponse(result as T);
+    } catch (err: unknown) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { data: null, error: { message: "Validation error", code: "VALIDATION_ERROR", issues: err.issues } },
+          { status: 400 }
+        );
+      }
+      if (err instanceof ApiError) {
+        return errorResponse(err.message, err.status, err.code ?? "API_ERROR");
+      }
+      console.error(err);
+      return errorResponse("Unexpected error", 500, "SERVER_ERROR");
     }
-    if (err instanceof ApiError) {
-      return errorResponse(err.message, err.status, err.code ?? "API_ERROR");
-    }
-    console.error(err);
-    return errorResponse("Unexpected error", 500, "SERVER_ERROR");
-  }
+  };
 }
