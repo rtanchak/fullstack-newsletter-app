@@ -8,6 +8,7 @@ export default function NewPostPage() {
   const router = useRouter();
   const [title, setTitle] = React.useState('');
   const [content, setContent] = React.useState('');
+  const [author, setAuthor] = React.useState('');
   const [status, setStatus] = React.useState<PostStatus>(PostStatus.DRAFT);
   const [publishAt, setPublishAt] = React.useState<string>(''); // ISO-local
   const [loading, setLoading] = React.useState(false);
@@ -20,7 +21,8 @@ export default function NewPostPage() {
 
     try {
       const body: Record<string, any> = { title, content, status };
-      // if (status === PostStatus.SCHEDULED && publishAt) body.publishAt = new Date(publishAt).toISOString();
+      if (author) body.author = author;
+      if (status === PostStatus.SCHEDULED && publishAt) body.publishedAt = new Date(publishAt).toISOString();
 
       const res = await fetch('/api/v1/posts', {
         method: 'POST',
@@ -31,6 +33,14 @@ export default function NewPostPage() {
       if (res.status === 201) {
         const json = await res.json();
         const slug = json?.data?.slug as string | undefined;
+        
+        // For scheduled posts, always go to home page
+        if (status === PostStatus.SCHEDULED) {
+          router.push('/');
+          return;
+        }
+        
+        // For other post types, go to the post page if slug exists
         if (slug) router.push(`/posts/${slug}`);
         else router.push('/'); // fallback
         return;
@@ -66,7 +76,7 @@ export default function NewPostPage() {
       </p>
 
       <form onSubmit={onSubmit}>
-        <label style={{ display: 'block', marginBottom: 6 }}>Title;</label>
+        <label style={{ display: 'block', marginBottom: 6 }}>Title</label>
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -74,8 +84,16 @@ export default function NewPostPage() {
           required
           style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
         />
+        
+        <label style={{ display: 'block', margin: '16px 0 6px' }}>Author</label>
+        <input
+          value={author}
+          onChange={(e) => setAuthor(e.target.value)}
+          placeholder="Author name"
+          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
+        />
 
-        <label style={{ display: 'block', margin: '16px 0 6px' }}>Content;</label>
+        <label style={{ display: 'block', margin: '16px 0 6px' }}>Content</label>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
@@ -85,7 +103,7 @@ export default function NewPostPage() {
           style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
         />
 
-        <label style={{ display: 'block', margin: '16px 0 6px' }}>Status;</label>
+        <label style={{ display: 'block', margin: '16px 0 6px' }}>Status</label>
         <select
           value={status}
           onChange={(e) => setStatus(e.target.value as PostStatus)}
@@ -96,24 +114,24 @@ export default function NewPostPage() {
           <option value="PUBLISHED">PUBLISHED</option>
         </select>
 
-        {/* {status === PostStatus.SCHEDULED && (
+        {status === PostStatus.SCHEDULED && (
           <>
-            <label style={{ display: 'block', margin: '16px 0 6px' }}>Publish At (local datetime);</label>
+            <label style={{ display: 'block', margin: '16px 0 6px' }}>Publish At (local datetime)</label>
             <input
               type="datetime-local"
               value={publishAt}
               onChange={(e) => setPublishAt(e.target.value)}
               style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
+              required={status === PostStatus.SCHEDULED}
             />
           </>
-        )} */}
+        )}
 
         {error && <div style={{ color: '#b91c1c', marginTop: 12 }}>{error}</div>}
 
         <button
           type="submit"
-          // disabled={loading || !title || !content || (status === PostStatus.SCHEDULED && !publishAt)}
-          disabled={loading || !title || !content}
+          disabled={loading || !title || !content || (status === PostStatus.SCHEDULED && !publishAt)}
           style={{
             marginTop: 18,
             padding: '10px 14px',
@@ -125,7 +143,7 @@ export default function NewPostPage() {
             width: '100%',
           }}
         >
-          {loading ? 'Saving…' : 'Create Post;'}
+          {loading ? 'Saving…' : 'Create Post'}
         </button>
       </form>
     </div>

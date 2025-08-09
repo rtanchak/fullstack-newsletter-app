@@ -9,8 +9,11 @@ import {
   findPostBySlug
 } from "./posts.repository";
 
+const DEFAULT_AUTHOR = "newsletter-app-editor";
+
 export async function createPost(input: CreatePostInput) {
   const slug = input.slug ?? slugify(input.title);
+  const author = input.author ?? DEFAULT_AUTHOR;
 
   const exists = await findPostBySlug(slug);
   if (exists) throw new ApiError("Slug already exists", 409, "SLUG_EXISTS");
@@ -28,6 +31,7 @@ export async function createPost(input: CreatePostInput) {
     title: input.title,
     content: input.content,
     slug,
+    author,
     status,
     publishedAt,
   });

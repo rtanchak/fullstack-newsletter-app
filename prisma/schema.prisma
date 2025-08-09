@@ -70,3 +70,12 @@ model Job {
   @@index([status, scheduledAt])
   @@index([jobType, status])
 }
+
+model EmailSend {
+  id           String   @id @default(cuid())
+  postId       String
+  subscriberId String
+  sentAt       DateTime @default(now())
+
+  @@unique([postId, subscriberId])
+}

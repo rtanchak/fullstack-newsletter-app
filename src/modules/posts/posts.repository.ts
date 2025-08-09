@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { PostStatus } from "@prisma/client";
+import { CreatePostInput } from "./posts.schemas";
 
 export async function findPublishedPosts(page = 1, limit = 10) {
   const skip = (page - 1) * limit;
-  const where = { status: "PUBLISHED" as const, publishedAt: { lte: new Date() } };
+  const where = { status: PostStatus.PUBLISHED, publishedAt: { lte: new Date() } };
 
   const [items, total] = await Promise.all([
     prisma.post.findMany({
@@ -29,17 +30,12 @@ export async function findPublishedPostBySlug(slug: string) {
   });
 }
 
-export async function createPost(data: {
-  title: string;
-  content: string;
-  slug: string;
-  status: PostStatus;
-  publishedAt: Date | null;
-}) {
+export async function createPost(data: CreatePostInput) {
   return prisma.post.create({
     data: {
       title: data.title,
       content: data.content,
+      author: data.author,
       slug: data.slug,
       status: data.status,
       publishedAt: data.publishedAt,
