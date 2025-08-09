@@ -22,7 +22,7 @@ export default async function HomePage({ searchParams }: Props) {
       <ul>
         {items.map((p) => (
           <li key={p.id}>
-            <Link href={`/${p.slug}`}>{p.title}</Link>{" "}
+            <Link href={`/posts/${p.slug}`}>{p.title}</Link>{" "}
             <small>{p.publishedAt ?? ""}</small>
           </li>
         ))}

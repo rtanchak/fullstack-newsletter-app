@@ -1,6 +1,36 @@
 import { handle, successResponse } from "@/lib/api"
 import { findPublishedPosts } from "@/modules/posts/posts.repository"
 
+/**
+ * @swagger
+ * /api/v1/posts:
+ *   get:
+ *     tags:
+ *       - Posts
+ *     summary: List published posts
+ *     description: Returns a paginated list of published posts, sorted by publish date (desc).
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination.
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 10
+ *         description: Number of items per page.
+ *     responses:
+ *       200:
+ *         description: OK — returns posts and pagination meta.
+ *       500:
+ *         description: Server error.
+ */
 export const GET = (req: Request) =>
   handle(async () => {
     const { searchParams } = new URL(req.url)
