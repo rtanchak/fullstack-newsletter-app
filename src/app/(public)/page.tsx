@@ -3,6 +3,9 @@ import { getPublishedPosts } from "@/modules/posts/posts.service";
 import { Container, Typography, Box, Paper, Link, Button } from "@mui/material";
 import { format } from "date-fns";
 
+const DEFAULT_LIMIT = 20;
+const MAX_LIMIT = 50;
+
 export const revalidate = 60;
 
 type Props = {
@@ -18,8 +21,8 @@ export default async function HomePage({ searchParams }: Props) {
 
   const parsedLimit = Number(limitParam);
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
-  const limitUnclamped = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : 10;
-  const limit = Math.min(50, limitUnclamped);
+  const limitUnclamped = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : DEFAULT_LIMIT;
+  const limit = Math.min(MAX_LIMIT, limitUnclamped);
 
   const { items, total } = await getPublishedPosts(page, limit);
   const totalPages = Math.max(1, Math.ceil(total / limit));
