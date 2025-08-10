@@ -8,6 +8,11 @@ type Props = { params: Promise<{ slug: string }> };
 
 export const revalidate = 60;
 
+export async function generateStaticParams() {
+  const { items } = await getPublishedPosts(1, 1000);
+  return items.map(p => ({ slug: p.slug }));
+}
+
 export default async function PostPage({ params }: Props) {
   const { slug } = await params;
   const post = await getPublishedPost(slug);
@@ -77,10 +82,4 @@ export default async function PostPage({ params }: Props) {
       </Paper>
     </Container>
   );
-}
-
-
-export async function generateStaticParams() {
-  const { items } = await getPublishedPosts(1, 1000);
-  return items.map(p => ({ slug: p.slug }));
 }
