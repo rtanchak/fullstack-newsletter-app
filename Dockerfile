@@ -1,17 +1,20 @@
 FROM node:18-alpine AS base
 
+# Install pnpm
+RUN npm install -g pnpm
+
 FROM base AS deps
 WORKDIR /app
 
-COPY package.json package-lock.json* ./
-RUN npm ci
+COPY package.json pnpm-lock.yaml* ./
+RUN pnpm install --frozen-lockfile
 
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 RUN npx prisma generate
-RUN npm run build
+RUN pnpm build
 
 FROM base AS runner
 WORKDIR /app

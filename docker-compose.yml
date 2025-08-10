@@ -1,7 +1,6 @@
 version: '3.8'
 
 services:
-  # PostgreSQL Database
   postgres:
     image: postgres:15
     container_name: newsletter-postgres
@@ -20,7 +19,23 @@ services:
       timeout: 5s
       retries: 5
 
-  # Next.js Application
+  seed:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: newsletter-seed
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: development
+      POSTGRES_PRISMA_URL: postgresql://postgres:postgres@postgres:5432/newsletter
+      POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@postgres:5432/newsletter
+    command: sh -c "npx prisma migrate deploy && pnpm seed"
+    volumes:
+      - ./:/app
+      - /app/node_modules
+
   app:
     build:
       context: .
@@ -30,8 +45,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      seed:
+        condition: service_completed_successfully
     environment:
-      NODE_ENV: production
+      NODE_ENV: development
       POSTGRES_PRISMA_URL: postgresql://postgres:postgres@postgres:5432/newsletter
       POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@postgres:5432/newsletter
     ports:

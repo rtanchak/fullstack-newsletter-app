@@ -9,7 +9,7 @@ type Props = { params: { slug: string } };
 export const revalidate = 60;
 
 export default async function PostPage({ params }: Props) {
-  const { slug } = await params;
+  const { slug } = params;
   const post = await getPublishedPost(slug);
 
   if (!post) notFound();
