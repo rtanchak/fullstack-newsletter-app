@@ -14,7 +14,7 @@ async function main() {
 
   console.log('Creating subscribers...');
   const subscribers = await Promise.all(
-    Array.from({ length: ITEMS_LENGTH }).map(async (_, i) => {
+    Array.from({ length: ITEMS_LENGTH }).map(async () => {
       return prisma.subscriber.create({
         data: { 
           email: faker.internet.email(),
