@@ -22,6 +22,8 @@ model Post {
   status      PostStatus @default(DRAFT)
   author      String     @default("newsletter-app-editor")
   publishedAt DateTime?
+  createdBy   String @default("newsletter-app")
+  updatedBy   String @default("newsletter-app")
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
 
@@ -42,8 +44,6 @@ model Subscriber {
   active    Boolean     @default(true)
   createdAt DateTime    @default(now())
   updatedAt DateTime    @updatedAt
-  
-  emailSends EmailSend[]
 }
 
 enum JobType {
@@ -63,6 +63,8 @@ model Job {
   jobType     JobType
   scheduledAt DateTime
   status      JobStatus @default(PENDING)
+  createdBy   String @default("newsletter-app")
+  updatedBy   String @default("newsletter-app")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
 
@@ -73,14 +75,3 @@ model Job {
   @@index([jobType, status])
 }
 
-model EmailSend {
-  id           String     @id @default(cuid())
-  postId       String
-  subscriberId String
-  sentAt       DateTime?  @default(now())
-  
-  subscriber   Subscriber @relation(fields: [subscriberId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  
-  @@unique([postId, subscriberId])
-  @@index([subscriberId])
-}

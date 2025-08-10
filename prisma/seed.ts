@@ -7,7 +7,6 @@ const ITEMS_LENGTH = 250;
 async function main() {
   console.log('Starting seed...');
 
-  await prisma.emailSend.deleteMany();
   await prisma.job.deleteMany();
   await prisma.post.deleteMany();
   await prisma.subscriber.deleteMany();
@@ -51,6 +50,8 @@ async function main() {
           content: faker.lorem.paragraphs({ min: 3, max: 7 }),
           status,
           publishedAt,
+          createdBy: 'seed-script',
+          updatedBy: 'seed-script',
         },
       });
     })
@@ -65,6 +66,8 @@ async function main() {
         jobType: JobType.POST_PUBLICATION,
         scheduledAt: faker.date.future({ years: 0.1 }),
         status: JobStatus.PENDING,
+        createdBy: 'seed-script',
+        updatedBy: 'seed-script',
       },
     }),
     prisma.job.create({
@@ -73,6 +76,8 @@ async function main() {
         jobType: JobType.POST_EMAIL_NOTIFICATION,
         scheduledAt: faker.date.future({ years: 0.1 }),
         status: JobStatus.PENDING,
+        createdBy: 'seed-script',
+        updatedBy: 'seed-script',
       },
     }),
     prisma.job.create({
@@ -81,6 +86,8 @@ async function main() {
         jobType: JobType.POST_EMAIL_NOTIFICATION,
         scheduledAt: faker.date.past({ years: 0.1 }),
         status: JobStatus.COMPLETED,
+        createdBy: 'seed-script',
+        updatedBy: 'seed-script',
       },
     }),
   ]);
