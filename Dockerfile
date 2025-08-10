@@ -18,6 +18,7 @@
   COPY --from=deps /app/node_modules ./node_modules
   COPY prisma ./prisma
   COPY package.json pnpm-lock.yaml* ./
+  RUN pnpm prisma generate
   RUN pnpm seed
   CMD ["npx", "prisma", "migrate", "deploy"]
   
@@ -25,6 +26,10 @@
   WORKDIR /app
   
   ENV NODE_ENV=production
+
+  ENV POSTGRES_PRISMA_URL=postgresql://postgres:postgres@postgres:5432/newsletter
+  ENV POSTGRES_URL_NON_POOLING=postgresql://postgres:postgres@postgres:5432/newsletter
+
   ENV PORT=3000
   
   RUN addgroup --system --gid 1001 nodejs \
