@@ -9,18 +9,18 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
   - View published posts in read-only mode
   - Schedule posts to be published at a later date
 
-- **Subscriber Management**
-  - Sign up for the newsletter with email validation
-  - Manage subscriber database with active/inactive status
-
 - **API Integration**
   - Retrieve blog posts from API including content
   - Comprehensive OpenAPI/Swagger documentation
   - Interactive API explorer
 
+- **Subscribers**
+  - Sign up for the newsletter with email validation
+
 - **Notification System**
   - Send emails to subscribers upon publishing a post
   - Background job processing for scheduled tasks
+  - Uses Vercel cron jobs by default, but compatible with any cron system
 
 - **Modern UI**
   - Responsive Material UI components
@@ -60,7 +60,7 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/fullstack-newsletter-app.git
+   git clone https://github.com/rtanchak/fullstack-newsletter-app.git
    cd fullstack-newsletter-app
    ```
 
@@ -120,13 +120,13 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
 
 1. Clone the repository
    ```bash
-   git clone https://github.com/yourusername/fullstack-newsletter-app.git
+   git clone https://github.com/rtanchak/fullstack-newsletter-app.git
    cd fullstack-newsletter-app
    ```
 
 2. Build and start all containers
    ```bash
-   docker-compose up -d
+   docker-compose up --profile default -d
    ```
 
 3. The application will be available at [http://localhost:3000](http://localhost:3000)
@@ -200,9 +200,9 @@ TODO
 Contributions are welcome! Please feel free to submit a Pull Request.
 
 1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add some amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
+2. Create your feature branch (`git checkout -b feature/test-feature`)
+3. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/) format (`git commit -m 'feat: add test feature'`)
+4. Push to the branch (`git push origin feature/test-feature`)
 5. Open a Pull Request
 
 ## License

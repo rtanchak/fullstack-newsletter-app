@@ -11,10 +11,6 @@ WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
-# Add environment variables for database connection during build
-ENV POSTGRES_PRISMA_URL=postgresql://postgres:postgres@postgres:5432/newsletter
-ENV POSTGRES_URL_NON_POOLING=postgresql://postgres:postgres@postgres:5432/newsletter
-
 RUN npx prisma generate
 RUN pnpm build
 
@@ -36,12 +32,16 @@ ENV PORT=3000
 
 RUN addgroup --system --gid 1001 nodejs \
  && adduser --system --uid 1001 nextjs
-USER nextjs
 
 COPY --from=builder /app/public ./public
 COPY --from=builder /app/.next/standalone ./
 COPY --from=builder /app/.next/static ./.next/static
 COPY --from=builder /app/prisma ./prisma
+
+RUN mkdir -p ./.next/server/app/posts \
+ && chown -R nextjs:nodejs /app
+
+USER nextjs
 
 EXPOSE 3000
 CMD ["node", "server.js"]
