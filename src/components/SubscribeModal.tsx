@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { Modal, Box, Typography, IconButton, Button, Alert } from "@mui/material";
-import CloseIcon from "@mui/icons-material/Close";
+import { Close as CloseIcon, CheckCircle as CheckCircleIcon } from "@mui/icons-material";
 import { SubscribeForm } from "./SubscriberForm";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { useSubscribe } from "../hooks/useSubscribe";
 
 interface SubscribeModalProps {
   open: boolean;
@@ -14,18 +14,18 @@ interface SubscribeModalProps {
 export function SubscribeModal({ open, onClose }: SubscribeModalProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [subscribedEmail, setSubscribedEmail] = useState("");
-  
-  const handleSubscriptionSuccess = (email: string) => {
+  const { mutate, isPending, error } = useSubscribe((email) => {
     setSubscribedEmail(email);
     setIsSuccess(true);
+  });
+  
+  const handleSubscriptionSuccess = (email: string) => {
+    mutate({ email });
   };
   
   const handleClose = () => {
-    // Reset state when modal is closed
-    setTimeout(() => {
-      setIsSuccess(false);
-      setSubscribedEmail("");
-    }, 300); // Small delay to avoid flashing content during animation
+    setIsSuccess(false);
+    setSubscribedEmail("");
     onClose();
   };
   return (

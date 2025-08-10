@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { PostStatus } from "@prisma/client";
-import { CreatePostInput } from "./posts.schemas";
+import { CreatePostDto } from "./posts.schemas";
 
 export async function findPublishedPosts(page = 1, limit = 10) {
   const skip = (page - 1) * limit;
@@ -9,7 +9,7 @@ export async function findPublishedPosts(page = 1, limit = 10) {
   const [items, total] = await Promise.all([
     prisma.post.findMany({
       where,
-      select: { id: true, title: true, slug: true, publishedAt: true },
+      select: { id: true, title: true, slug: true, publishedAt: true, author: true },
       orderBy: { publishedAt: "desc" },
       skip,
       take: limit,
@@ -30,7 +30,7 @@ export async function findPublishedPostBySlug(slug: string) {
   });
 }
 
-export async function createPost(data: CreatePostInput) {
+export async function createPost(data: CreatePostDto) {
   return prisma.post.create({
     data: {
       title: data.title,

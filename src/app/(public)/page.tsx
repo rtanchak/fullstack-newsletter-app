@@ -52,7 +52,7 @@ export default async function HomePage({ searchParams }: Props) {
               </Link>
               <Box sx={{ display: 'flex', gap: 3, alignItems: 'center' }}>
                 <Typography variant="body2" color="text.secondary" sx={{ minWidth: '100px' }}>
-                  by Guest Author
+                  by {p.author}
                 </Typography>
                 {p.publishedAt && (
                   <Typography variant="caption" color="text.secondary" sx={{ minWidth: '90px' }}>

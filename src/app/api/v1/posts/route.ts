@@ -80,7 +80,7 @@ export const GET = handle(async (req: NextRequest) => {
  */
 export const POST = handle(async (req: NextRequest) => {
   const body = await req.json();
-  const data = schemas.createPostSchema.parse(body);
+  const data = schemas.createPostRequestSchema.parse(body);
   const post = await service.createPost(data);
   
   return createdResponse(post);

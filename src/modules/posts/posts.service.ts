@@ -1,6 +1,6 @@
 import { ApiError } from "@/lib/api";
 import { slugify } from "@/lib/utils";
-import { CreatePostInput } from "./posts.schemas";
+import { CreatePostFromRequestDto } from "./posts.schemas";
 import { PostStatus } from "@prisma/client";
 import {
   findPublishedPosts,
@@ -11,7 +11,7 @@ import {
 
 const DEFAULT_AUTHOR = "newsletter-app-editor";
 
-export async function createPost(input: CreatePostInput) {
+export async function createPost(input: CreatePostFromRequestDto) {
   const slug = input.slug ?? slugify(input.title);
   const author = input.author ?? DEFAULT_AUTHOR;
 

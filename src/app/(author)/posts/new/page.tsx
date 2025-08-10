@@ -4,13 +4,36 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { PostStatus } from '@prisma/client';
 
+import {
+  Container,
+  Typography,
+  Box,
+  TextField,
+  MenuItem,
+  Button,
+  Paper,
+  Alert,
+  FormControl,
+  InputLabel,
+  Select,
+  Stack,
+  useTheme
+} from '@mui/material';
+
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import 'dayjs/locale/de';
+import dayjs from 'dayjs';
+
 export default function NewPostPage() {
   const router = useRouter();
+  const theme = useTheme();
   const [title, setTitle] = React.useState('');
   const [content, setContent] = React.useState('');
   const [author, setAuthor] = React.useState('');
-  const [status, setStatus] = React.useState<PostStatus>(PostStatus.DRAFT);
-  const [publishAt, setPublishAt] = React.useState<string>(''); // ISO-local
+  const [status, setStatus] = React.useState<PostStatus>(PostStatus.PUBLISHED);
+  const [publishDate, setPublishDate] = React.useState<dayjs.Dayjs | null>(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
 
@@ -22,7 +45,15 @@ export default function NewPostPage() {
     try {
       const body: Record<string, any> = { title, content, status };
       if (author) body.author = author;
-      if (status === PostStatus.SCHEDULED && publishAt) body.publishedAt = new Date(publishAt).toISOString();
+      
+      if (status === PostStatus.SCHEDULED) {
+        if (!publishDate) {
+          setError("Please select a publication date for scheduled posts");
+          setLoading(false);
+          return;
+        }
+        body.publishedAt = publishDate.toISOString();
+      }
 
       const res = await fetch('/api/v1/posts', {
         method: 'POST',
@@ -34,15 +65,13 @@ export default function NewPostPage() {
         const json = await res.json();
         const slug = json?.data?.slug as string | undefined;
         
-        // For scheduled posts, always go to home page
         if (status === PostStatus.SCHEDULED) {
           router.push('/');
           return;
         }
         
-        // For other post types, go to the post page if slug exists
         if (slug) router.push(`/posts/${slug}`);
-        else router.push('/'); // fallback
+        else router.push('/');
         return;
       }
 
@@ -55,97 +84,117 @@ export default function NewPostPage() {
     }
   }
 
-  async function handleLogout() {
-    try {
-      await fetch('/api/v1/author/logout', {
-        method: 'POST',
-      });
-      router.push('/author/login');
-    } catch (err) {
-      console.error('Logout failed', err);
-    }
-  }
-
   return (
-    <div style={{ maxWidth: 720, margin: '40px auto', padding: 24 }}>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ margin: 0 }}>Create Post</h1>
-      </div>
-      <p style={{ color: '#6b7280', marginBottom: 24 }}>
-        Fill in the fields and submit to create a draft, schedule, or publish now.
-      </p>
+    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
+      <Container maxWidth="md" sx={{ py: 5 }}>
+        <Paper elevation={2} sx={{ p: 4 }}>
+          <Box mb={3}>
+            <Typography variant="h4" component="h1" gutterBottom>
+              Create Post
+            </Typography>
+            <Typography variant="body1" color="text.secondary">
+              Fill in the fields and submit to create a draft, schedule, or publish now.
+            </Typography>
+          </Box>
 
-      <form onSubmit={onSubmit}>
-        <label style={{ display: 'block', marginBottom: 6 }}>Title</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Post title"
-          required
-          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
-        />
-        
-        <label style={{ display: 'block', margin: '16px 0 6px' }}>Author</label>
-        <input
-          value={author}
-          onChange={(e) => setAuthor(e.target.value)}
-          placeholder="Author name"
-          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
-        />
+          <Box component="form" onSubmit={onSubmit} noValidate>
+            <Stack spacing={3}>
+              <TextField
+                label="Title"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                placeholder="Post title"
+                required
+                fullWidth
+              />
+              
+              <TextField
+                label="Author"
+                value={author}
+                onChange={(e) => setAuthor(e.target.value)}
+                placeholder="Author name"
+                fullWidth
+              />
 
-        <label style={{ display: 'block', margin: '16px 0 6px' }}>Content</label>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="Write your content…"
-          required
-          rows={10}
-          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
-        />
+              <TextField
+                label="Content"
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                placeholder="Write your content…"
+                required
+                multiline
+                rows={10}
+                fullWidth
+              />
 
-        <label style={{ display: 'block', margin: '16px 0 6px' }}>Status</label>
-        <select
-          value={status}
-          onChange={(e) => setStatus(e.target.value as PostStatus)}
-          style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
-        >
-          <option value="DRAFT">DRAFT</option>
-          <option value="SCHEDULED">SCHEDULED</option>
-          <option value="PUBLISHED">PUBLISHED</option>
-        </select>
+              <FormControl fullWidth>
+                <InputLabel id="post-status-label">Status</InputLabel>
+                <Select
+                  labelId="post-status-label"
+                  value={status}
+                  label="Status"
+                  onChange={(e) => setStatus(e.target.value as PostStatus)}
+                >
+                  <MenuItem value={PostStatus.PUBLISHED}>Ready to be published</MenuItem>
+                  <MenuItem value={PostStatus.SCHEDULED}>Scheduled</MenuItem>
+                </Select>
+              </FormControl>
 
-        {status === PostStatus.SCHEDULED && (
-          <>
-            <label style={{ display: 'block', margin: '16px 0 6px' }}>Publish At (local datetime)</label>
-            <input
-              type="datetime-local"
-              value={publishAt}
-              onChange={(e) => setPublishAt(e.target.value)}
-              style={{ width: '100%', padding: '10px 12px', borderRadius: 8, border: '1px solid #d1d5db' }}
-              required={status === PostStatus.SCHEDULED}
-            />
-          </>
-        )}
+              {status === PostStatus.SCHEDULED && (
+                <DateTimePicker
+                  label="Publish Date and Time"
+                  value={publishDate}
+                  onChange={(newValue) => setPublishDate(newValue)}
+                  format="DD.MM.YYYY HH:mm"
+                  ampm={false}
+                  slotProps={{
+                    textField: {
+                      required: true,
+                      fullWidth: true,
+                      helperText: "Select when this post should be published"
+                    },
+                    actionBar: {
+                      actions: ['clear', 'today', 'accept']
+                    },
+                    layout: {
+                      sx: {
+                        '& .MuiPickersLayout-contentWrapper': {
+                          bgcolor: theme.palette.background.paper
+                        },
+                        '& .MuiPickersLayout-actionBar': {
+                          bgcolor: theme.palette.background.paper
+                        },
+                        '& .MuiClock-clock': {
+                          bgcolor: theme.palette.background.paper
+                        },
+                        '& .MuiClockNumber-root': {
+                          color: theme.palette.text.primary
+                        },
+                        '& .MuiPickersDay-root': {
+                          color: theme.palette.text.primary
+                        }
+                      }
+                    }
+                  }}
+                />
+              )}
 
-        {error && <div style={{ color: '#b91c1c', marginTop: 12 }}>{error}</div>}
+              {error && <Alert severity="error">{error}</Alert>}
 
-        <button
-          type="submit"
-          disabled={loading || !title || !content || (status === PostStatus.SCHEDULED && !publishAt)}
-          style={{
-            marginTop: 18,
-            padding: '10px 14px',
-            borderRadius: 8,
-            background: '#111827',
-            color: '#fff',
-            border: '1px solid transparent',
-            cursor: loading ? 'not-allowed' : 'pointer',
-            width: '100%',
-          }}
-        >
-          {loading ? 'Saving…' : 'Create Post'}
-        </button>
-      </form>
-    </div>
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading || !title || !content || (status === PostStatus.SCHEDULED && !publishDate)}
+                fullWidth
+                size="large"
+              >
+                {loading ? 'Saving…' : 'Create Post'}
+              </Button>
+            </Stack>
+          </Box>
+        </Paper>
+      </Container>
+    </LocalizationProvider>
   );
 }
