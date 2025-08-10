@@ -43,7 +43,7 @@ export default function NewPostPage() {
     setError(null);
 
     try {
-      const body: Record<string, any> = { title, content, status };
+      const body: Record<string, string> = { title, content, status };
       if (author) body.author = author;
       
       if (status === PostStatus.SCHEDULED) {
@@ -77,8 +77,8 @@ export default function NewPostPage() {
 
       const json = await res.json().catch(() => null);
       setError(json?.error?.message ?? `Failed with status ${res.status}`);
-    } catch (err: any) {
-      setError(err?.message ?? 'Network error');
+    } catch (err: unknown) {
+      setError((err as { message: string }).message ?? 'Network error');
     } finally {
       setLoading(false);
     }

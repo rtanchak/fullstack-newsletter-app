@@ -1,4 +1,4 @@
-import { JobStatus, JobType } from '@prisma/client';
+import { JobStatus } from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { EnqueueJobDTO } from './jobs.schemas';
 

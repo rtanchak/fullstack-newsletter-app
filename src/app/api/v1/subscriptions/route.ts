@@ -57,12 +57,10 @@ export const POST = handle(async (req: Request) => {
     const data = await service.subscribe(parsed);
 
     return successResponse(data);
-  } catch (err: any) {
-    const message =
-      err?.issues?.[0]?.message ??
-      err?.message ??
-      "Validation or server error;";
-    const status = err?.name === "ZodError" ? 400 : 500;
+  } catch (err: unknown) {
+    // TODO: add better errors
+    const message = "Validation or server error;";
+    const status = (err as { name: string }).name === "ZodError" ? 400 : 500;
 
     return errorResponse(message, status);
   }

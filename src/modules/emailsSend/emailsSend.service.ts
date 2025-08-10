@@ -47,12 +47,12 @@ export async function processEmailSends(concurrency = DEFAULT_CONCURRENCY) {
     const subscribersMap = new Map(subscribers.map((s: { id: string; email: string }) => [s.id, s]));
 
     let sentCount = 0;
-    let emailSendIds: string[] = [];
+    const emailSendIds: string[] = [];
     
     for (let i = 0; i < emailSends.length; i += concurrency) {
       const batch = emailSends.slice(i, i + concurrency);
       
-      const results = await Promise.allSettled(batch.map(async (emailSend) => {
+      await Promise.allSettled(batch.map(async (emailSend) => {
         try {
           const post = postsMap.get(emailSend.postId);
           const subscriber = subscribersMap.get(emailSend.subscriberId);

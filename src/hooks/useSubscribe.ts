@@ -9,15 +9,14 @@ export function useSubscribe(onSuccess?: (email: string) => void) {
   return useMutation<SubscribeResult, Error, SubscribeInput>({
     mutationFn: async (input) => {
       try {
-        const response = await apiClient.post<ApiEnvelope<{ email: string; id: string; active: boolean }>>(
+        await apiClient.post<ApiEnvelope<{ email: string; id: string; active: boolean }>>(
           "/v1/subscriptions",
           input
         );
         
         return { ok: true, email: input.email };
-      } catch (error: any) {
-        const errorMessage = error.response?.data?.error?.message || error.message || "Failed to subscribe";
-        throw new Error(errorMessage);
+      } catch (error: unknown) {
+        throw new Error((error as { response: { data: { error: { message: string } } } }).response?.data?.error?.message || (error as { message: string }).message || "Failed to subscribe");  
       }
     },
     onSuccess: (res) => {

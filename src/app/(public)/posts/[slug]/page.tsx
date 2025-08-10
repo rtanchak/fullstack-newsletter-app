@@ -4,12 +4,12 @@ import { getPublishedPost } from "@/modules/posts/posts.service";
 import { Container, Typography, Paper, Box, Chip, Divider } from "@mui/material";
 import { CalendarToday as CalendarIcon } from "@mui/icons-material";
 
-type Props = { params: { slug: string } };
+type Props = { params: Promise<{ slug: string }> };
 
 export const revalidate = 60;
 
 export default async function PostPage({ params }: Props) {
-  const { slug } = params;
+  const { slug } = await params;
   const post = await getPublishedPost(slug);
 
   if (!post) notFound();

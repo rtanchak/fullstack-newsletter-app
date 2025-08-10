@@ -40,7 +40,7 @@ export async function getUnsentEmailSends() {
   });
 }
 
-export async function updateMany(params: { where: any; data: any }) {
+export async function updateMany(params: { where: { id: string | { in: string[] } }; data: { sentAt: Date } }) {
   return prisma.emailSend.updateMany(params);
 }
 

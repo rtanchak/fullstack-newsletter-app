@@ -1,14 +1,14 @@
 import { NextResponse, NextRequest } from "next/server";
 import { ZodError } from "zod";
 
-export type ApiEnvelope<T> = { data: T; error: null } | { data: null; error: { message: string; code?: string } };
+export type ApiEnvelope<T> = { data: T; error: null; meta?: Record<string, unknown> } | { data: null; error: { message: string; code?: string }; meta?: Record<string, unknown> };
 
 export type PaginationMeta = { page: number; limit: number; total: number };
 
 export function successResponse<T>(data: T, meta?: Record<string, unknown>) {
-  const body: any = { data, error: null };
+  const body: ApiEnvelope<T> = { data, error: null };
   if (meta) body.meta = meta;
-  return NextResponse.json(body satisfies ApiEnvelope<T>);
+  return NextResponse.json(body);
 }
 
 export function createdResponse<T>(data: T) {

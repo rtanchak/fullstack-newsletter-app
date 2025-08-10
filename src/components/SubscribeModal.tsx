@@ -66,7 +66,7 @@ export function SubscribeModal({ open, onClose }: SubscribeModalProps) {
           <Box sx={{ textAlign: 'center', py: 2 }}>
             <CheckCircleIcon color="success" sx={{ fontSize: 60, mb: 2 }} />
             <Alert severity="success" sx={{ mb: 3 }}>
-              Congratulations! You've successfully subscribed.
+              Congratulations! You have successfully subscribed.
             </Alert>
             <Typography variant="body1" mb={3}>
               <strong>{subscribedEmail}</strong> has been added to our newsletter.
