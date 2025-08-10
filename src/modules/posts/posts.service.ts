@@ -8,6 +8,8 @@ import {
   createPost as createPostRepo,
   findPostBySlug
 } from "./posts.repository";
+import { prisma } from "@/lib/prisma";
+import { jobsService } from "@/modules/jobs/jobs.service";
 
 const DEFAULT_AUTHOR = "newsletter-app-editor";
 
@@ -27,7 +29,7 @@ export async function createPost(input: CreatePostFromRequestDto) {
 
   const status = input.status ?? PostStatus.DRAFT;
 
-  return createPostRepo({
+  const post = await createPostRepo({
     title: input.title,
     content: input.content,
     slug,
@@ -35,6 +37,15 @@ export async function createPost(input: CreatePostFromRequestDto) {
     status,
     publishedAt,
   });
+
+  if (status === PostStatus.PUBLISHED) {
+    await jobsService.enqueueEmailNotifications(post.id, now);
+  } else if (status === PostStatus.SCHEDULED && input.publishedAt) {
+    const scheduledDate = new Date(input.publishedAt);
+    await jobsService.enqueuePublication(post.id, scheduledDate);
+  }
+
+  return post;
 }
 
 export async function getPublishedPosts(page: number, limit: number) {
@@ -43,4 +54,28 @@ export async function getPublishedPosts(page: number, limit: number) {
 
 export async function getPublishedPost(slug: string) {
   return findPublishedPostBySlug(slug);
+}
+
+export async function publishPost(postId: string) {
+  const post = await prisma.post.findUnique({ where: { id: postId } });
+  if (!post) throw new ApiError("Post not found", 404, "POST_NOT_FOUND");
+
+  if (post.status !== PostStatus.PUBLISHED) {
+    return prisma.post.update({
+      where: { id: postId },
+      data: { status: PostStatus.PUBLISHED, publishedAt: new Date() },
+    });
+  }
+  
+  return post;
+}
+
+/**
+ * Get posts by their IDs
+ */
+export async function getPostsByIds(postIds: string[]) {
+  return prisma.post.findMany({
+    where: { id: { in: postIds } },
+    select: { id: true, title: true, content: true, slug: true }
+  });
 }

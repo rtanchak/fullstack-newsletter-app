@@ -1,15 +1,5 @@
 import { prisma } from '@/lib/prisma';
 
-/**
- * Creates a new email send record
- */
-export async function create(data: { postId: string; subscriberId: string }) {
-  return prisma.emailSend.create({ data });
-}
-
-/**
- * Creates an email send record if it doesn't already exist
- */
 export async function createIfNotExists(data: { postId: string; subscriberId: string }) {
   const existing = await prisma.emailSend.findUnique({
     where: {
@@ -27,28 +17,33 @@ export async function createIfNotExists(data: { postId: string; subscriberId: st
   return prisma.emailSend.create({ data });
 }
 
-/**
- * Creates multiple email send records at once
- */
 export async function createMany(data: { postId: string; subscriberId: string }[]) {
   return prisma.emailSend.createMany({
     data,
-    skipDuplicates: true,
+    skipDuplicates: true
   });
 }
 
-/**
- * Gets all email sends for a specific post
- */
 export async function getByPostId(postId: string) {
   return prisma.emailSend.findMany({
     where: { postId },
+    include: { subscriber: true },
+    orderBy: { sentAt: 'desc' },
   });
 }
 
-/**
- * Gets all email sends for a specific subscriber
- */
+export async function getUnsentEmailSends() {
+  return prisma.emailSend.findMany({
+    where: { sentAt: undefined },
+    take: 100,
+    orderBy: { id: 'asc' }
+  });
+}
+
+export async function updateMany(params: { where: any; data: any }) {
+  return prisma.emailSend.updateMany(params);
+}
+
 export async function getBySubscriberId(subscriberId: string) {
   return prisma.emailSend.findMany({
     where: { subscriberId },

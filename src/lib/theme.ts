@@ -52,7 +52,7 @@ const theme = createTheme({
       fontWeight: 500,
     },
     button: {
-      textTransform: 'none', // Prevents all-caps buttons
+      textTransform: 'none',
     },
   },
   shape: {

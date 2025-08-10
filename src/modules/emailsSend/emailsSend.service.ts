@@ -1,113 +1,97 @@
 import * as emailsSendRepository from './emailsSend.repository';
-import { prisma } from '@/lib/prisma';
+import { ResendMailProvider } from '@/modules/notifications/emails/providers/3rd-party.provider';
+import { ProcessEmailSendsResultDto } from './emailsSend.schemas';
+import * as postsService from '@/modules/posts/posts.service';
+import * as subscribersService from '@/modules/subscribers/subscribers.service';
 
 const DEFAULT_CONCURRENCY = 5;
+const EMAIL_TEMPLATE_ID = 'post_published';
+const EMAIL_SUBJECT = 'New post published';
 
-export const emailsSendService = {
-  /**
-   * Creates an email send record for a subscriber
-   */
-  async createEmailSend(postId: string, subscriberId: string) {
-    return emailsSendRepository.createIfNotExists({ postId, subscriberId });
-  },
+const emailProvider = new ResendMailProvider();
 
-  /**
-   * Creates email send records for multiple subscribers
-   */
-  async createEmailSendBatch(postId: string, subscriberIds: string[]) {
-    const data = subscriberIds.map(subscriberId => ({ postId, subscriberId }));
-    return emailsSendRepository.createMany(data);
-  },
+export async function createEmailSend(postId: string, subscriberId: string) {
+  return emailsSendRepository.createIfNotExists({ postId, subscriberId });
+}
 
-  /**
-   * Processes email sends that haven't been sent yet
-   * In a real application, this would connect to an email service
-   */
-  async processEmailSends(concurrency = DEFAULT_CONCURRENCY) {
-    // In a real app, we would query for unsent emails
-    // For now, we'll simulate by getting recent email sends
-    const emailSends = await prisma.emailSend.findMany({
-      take: 100,
-      orderBy: { sentAt: 'desc' }
-    });
+export async function queueEmailsForPost(postId: string) {
+  const subscribers = await subscribersService.getActiveSubscribers();
+  
+  if (subscribers.length === 0) {
+    return { queuedCount: 0 };
+  }
+  
+  await emailsSendRepository.createMany(
+    subscribers.map((sub: { id: string }) => ({
+      postId,
+      subscriberId: sub.id
+    }))
+  );
+  
+  return { queuedCount: subscribers.length };
+}
 
-    // Get related posts and subscribers in separate queries
-    const postIds = [...new Set(emailSends.map(e => e.postId))];
-    const subscriberIds = [...new Set(emailSends.map(e => e.subscriberId))];
+export async function processEmailSends(concurrency = DEFAULT_CONCURRENCY) {
+    const emailSends = await emailsSendRepository.getUnsentEmailSends();
+
+    if (emailSends.length === 0) {
+      return ProcessEmailSendsResultDto.parse({ sentCount: 0 });
+    }
+
+    const postIds = [...new Set(emailSends.map((e: { postId: string }) => e.postId))];
+    const subscriberIds = [...new Set(emailSends.map((e: { subscriberId: string }) => e.subscriberId))];
+    const posts = await postsService.getPostsByIds(postIds);
+    const subscribers = await subscribersService.getSubscribersByIds(subscriberIds);
     
-    const posts = await prisma.post.findMany({
-      where: { id: { in: postIds } },
-      select: { id: true, title: true, content: true, slug: true }
-    });
-    
-    const subscribers = await prisma.subscriber.findMany({
-      where: { id: { in: subscriberIds } },
-      select: { id: true, email: true }
-    });
-    
-    // Create lookup maps for efficient access
-    const postsMap = new Map(posts.map(p => [p.id, p]));
-    const subscribersMap = new Map(subscribers.map(s => [s.id, s]));
+    const postsMap = new Map(posts.map((p: { id: string }) => [p.id, p]));
+    const subscribersMap = new Map(subscribers.map((s: { id: string; email: string }) => [s.id, s]));
 
     let sentCount = 0;
+    let emailSendIds: string[] = [];
     
-    // Process in batches with controlled concurrency
     for (let i = 0; i < emailSends.length; i += concurrency) {
       const batch = emailSends.slice(i, i + concurrency);
       
-      // In a real app, we would use Promise.all to send emails in parallel
-      await Promise.all(batch.map(async (emailSend) => {
+      const results = await Promise.allSettled(batch.map(async (emailSend) => {
         try {
           const post = postsMap.get(emailSend.postId);
           const subscriber = subscribersMap.get(emailSend.subscriberId);
           
           if (!post || !subscriber) {
             console.error(`Missing data for email send ${emailSend.id}`);
-            return false;
+            return { success: false, id: emailSend.id };
           }
           
-          // Simulate sending an email
-          console.log(`Sending email to ${subscriber.email} about "${post.title}"`);
-          
-          // In a real app, we would update the emailSend record with sent status
-          // await prisma.emailSend.update({
-          //   where: { id: emailSend.id },
-          //   data: { status: 'SENT' }
-          // });
-          
+          await emailProvider.send(
+            subscriber.email,
+            EMAIL_SUBJECT,
+            EMAIL_TEMPLATE_ID
+          );
+          emailSendIds.push(emailSend.id);
           sentCount++;
-          return true;
+          return { success: true, id: emailSend.id };
         } catch (error) {
           console.error(`Failed to send email ${emailSend.id}:`, error);
-          
-          // In a real app, we would update the emailSend record with error status
-          // await prisma.emailSend.update({
-          //   where: { id: emailSend.id },
-          //   data: { status: 'FAILED', error: String(error) }
-          // });
-          
-          return false;
+          return { success: false, id: emailSend.id };
         }
       }));
     }
 
-    return { sentCount };
-  },
+    if (emailSendIds.length > 0) {
+      await emailsSendRepository.updateMany({
+        where: { id: { in: emailSendIds } },
+        data: { sentAt: new Date() }
+      });
+    }
 
-  /**
-   * Gets all email sends for a post
-   */
-  async getEmailSendsByPost(postId: string) {
-    return emailsSendRepository.getByPostId(postId);
-  },
+    const result = { sentCount };
+    return ProcessEmailSendsResultDto.parse(result);
+}
 
-  /**
-   * Gets all email sends for a subscriber
-   */
-  async getEmailSendsBySubscriber(subscriberId: string) {
-    return emailsSendRepository.getBySubscriberId(subscriberId);
-  }
-};
+export async function getEmailSendsByPost(postId: string) {
+  return emailsSendRepository.getByPostId(postId);
+}
 
-// Export a default instance for convenience
-export default emailsSendService;
+export async function getEmailSendsBySubscriber(subscriberId: string) {
+  return emailsSendRepository.getBySubscriberId(subscriberId);
+}
