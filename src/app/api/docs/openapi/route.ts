@@ -1,4 +1,4 @@
-import { getApiDocs } from "@/lib/swagger";
+import { getApiDocs } from "@/lib/utils/swagger";
 
 type OpenAPISpec = {
   openapi: string;

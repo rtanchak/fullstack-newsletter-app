@@ -1,6 +1,6 @@
 import * as postsService from '@/modules/posts/posts.service';
 import * as subscribersService from '@/modules/subscribers/subscribers.service';
-import { ApiError } from '@/lib/api';
+import { ApiError } from '@/lib/api/api';
 import { ResendMailProvider } from '@/modules/notifications/emails/providers/3rd-party.provider';
 import { SendEmailOptions, SendEmailResponse, EmailTemplateData, ProcessResult } from '@/lib/types/emails';
 

@@ -17,72 +17,58 @@ import {
   InputLabel,
   Select,
   Stack,
-  useTheme
+  useTheme,
 } from '@mui/material';
-
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import 'dayjs/locale/de';
+import { useMutation } from '@tanstack/react-query';
 import dayjs from 'dayjs';
+import { createPost } from '@/lib/api/posts';
+import { CreatePostPayload } from '@/lib/types/api';
 
 export default function NewPostPage() {
   const router = useRouter();
   const theme = useTheme();
+
   const [title, setTitle] = React.useState('');
   const [content, setContent] = React.useState('');
   const [author, setAuthor] = React.useState('');
   const [status, setStatus] = React.useState<PostStatus>(PostStatus.PUBLISHED);
   const [publishDate, setPublishDate] = React.useState<dayjs.Dayjs | null>(null);
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState<string | null>(null);
 
-  async function onSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-
-    try {
-      const body: Record<string, string> = { title, content, status };
-      if (author) body.author = author;
-      
-      if (status === PostStatus.SCHEDULED) {
-        if (!publishDate) {
-          setError("Please select a publication date for scheduled posts");
-          setLoading(false);
-          return;
-        }
-        body.publishedAt = publishDate.toISOString();
-      }
-
-      const res = await fetch('/api/v1/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      });
-
-      if (res.status === 201) {
-        const json = await res.json();
-        const slug = json?.data?.slug as string | undefined;
-        
-        if (status === PostStatus.SCHEDULED) {
-          router.push('/');
-          return;
-        }
-        
-        if (slug) router.push(`/posts/${slug}`);
-        else router.push('/');
+  const { mutate, isPending, isError, error } = useMutation({
+    mutationFn: createPost,
+    onSuccess: (json, variables) => {
+      if (variables.status === PostStatus.SCHEDULED) {
+        router.push('/');
         return;
       }
+      const slug = json?.data?.slug;
+      router.push(slug ? `/posts/${slug}` : '/');
+    },
+  });
 
-      const json = await res.json().catch(() => null);
-      setError(json?.error?.message ?? `Failed with status ${res.status}`);
-    } catch (err: unknown) {
-      setError((err as { message: string }).message ?? 'Network error');
-    } finally {
-      setLoading(false);
-    }
+  function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+
+    if (status === PostStatus.SCHEDULED && !publishDate) return;
+
+    const payload: CreatePostPayload = {
+      title,
+      content,
+      status,
+      ...(author ? { author } : {}),
+      ...(status === PostStatus.SCHEDULED && publishDate
+        ? { publishedAt: publishDate.toISOString() }
+        : {}),
+    };
+
+    mutate(payload);
   }
+
+  const isInvalidScheduled = status === PostStatus.SCHEDULED && !publishDate;
+  const canSubmit = !!title && !!content && !isInvalidScheduled && !isPending;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="de">
@@ -107,7 +93,7 @@ export default function NewPostPage() {
                 required
                 fullWidth
               />
-              
+
               <TextField
                 label="Author"
                 value={author}
@@ -135,7 +121,7 @@ export default function NewPostPage() {
                   label="Status"
                   onChange={(e) => setStatus(e.target.value as PostStatus)}
                 >
-                  <MenuItem value={PostStatus.PUBLISHED}>Ready to be published</MenuItem>
+                  <MenuItem value={PostStatus.PUBLISHED}>Publish now</MenuItem>
                   <MenuItem value={PostStatus.SCHEDULED}>Scheduled</MenuItem>
                 </Select>
               </FormControl>
@@ -151,45 +137,48 @@ export default function NewPostPage() {
                     textField: {
                       required: true,
                       fullWidth: true,
-                      helperText: "Select when this post should be published"
+                      error: isInvalidScheduled,
+                      helperText: isInvalidScheduled
+                        ? 'Please select a publication date for scheduled posts'
+                        : 'Select when this post should be published',
                     },
                     actionBar: {
-                      actions: ['clear', 'today', 'accept']
+                      actions: ['clear', 'today', 'accept'],
                     },
                     layout: {
                       sx: {
                         '& .MuiPickersLayout-contentWrapper': {
-                          bgcolor: theme.palette.background.paper
+                          bgcolor: theme.palette.background.paper,
                         },
                         '& .MuiPickersLayout-actionBar': {
-                          bgcolor: theme.palette.background.paper
+                          bgcolor: theme.palette.background.paper,
                         },
                         '& .MuiClock-clock': {
-                          bgcolor: theme.palette.background.paper
+                          bgcolor: theme.palette.background.paper,
                         },
                         '& .MuiClockNumber-root': {
-                          color: theme.palette.text.primary
+                          color: theme.palette.text.primary,
                         },
                         '& .MuiPickersDay-root': {
-                          color: theme.palette.text.primary
-                        }
-                      }
-                    }
+                          color: theme.palette.text.primary,
+                        },
+                      },
+                    },
                   }}
                 />
               )}
 
-              {error && <Alert severity="error">{error}</Alert>}
+              {isError && <Alert severity="error">{(error as Error)?.message}</Alert>}
 
               <Button
                 type="submit"
                 variant="contained"
                 color="primary"
-                disabled={loading || !title || !content || (status === PostStatus.SCHEDULED && !publishDate)}
+                disabled={!canSubmit || isPending}
                 fullWidth
                 size="large"
               >
-                {loading ? 'Saving…' : 'Create Post'}
+                {isPending ? 'Saving…' : 'Create Post'}
               </Button>
             </Stack>
           </Box>

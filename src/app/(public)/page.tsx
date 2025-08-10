@@ -6,14 +6,13 @@ import {
   Box,
   Paper,
   Link,
-  Button,
   ListItemText,
   List,
   ListItem,
 } from "@mui/material";
 import PostsPagination from "@/components/PostsPagination";
 import { format } from "date-fns";
-import { parsePaginationParams } from "@/lib/pagination";
+import { parsePaginationParams } from '@/lib/pagination';
 
 export const revalidate = 60;
 

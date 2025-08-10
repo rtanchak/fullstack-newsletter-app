@@ -1,5 +1,5 @@
 import {service, schemas} from "@/modules/subscribers";
-import { handle, successResponse, errorResponse } from "@/lib/api";
+import { handle, successResponse, errorResponse } from "@/lib/api/api";
 
 export const POST = handle(async (req: Request) => {
   try {

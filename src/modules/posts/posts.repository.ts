@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/utils/prisma";
 import { PostStatus } from "@prisma/client";
 import { CreatePostDto } from "./posts.schemas";
 

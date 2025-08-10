@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import type { SubscribeInput } from "../modules/subscribers/subscribers.schemas";
-import type { ApiEnvelope } from "../lib/api";
-import apiClient from "../lib/axios";
+import type { ApiEnvelope } from "../lib/api/api";
+import apiClient from "../lib/api/axios";
 
 type SubscribeResult = { ok: boolean; email: string };
 

@@ -1,4 +1,4 @@
-import { handle, successResponse, errorResponse } from "@/lib/api";
+import { handle, successResponse, errorResponse } from "@/lib/api/api";
 import { NextRequest } from "next/server";
 import { service } from "@/modules/posts";
 

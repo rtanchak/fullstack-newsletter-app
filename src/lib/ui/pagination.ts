@@ -19,7 +19,6 @@ export function parsePaginationParams(
   const limitUnclamped = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : defaultLimit;
   const currentLimit = Math.min(maxLimit, limitUnclamped);
   
-  // Calculate total pages if total items count is provided
   const calculateTotalPages = (totalItems: number) => Math.ceil(totalItems / currentLimit);
 
   return {

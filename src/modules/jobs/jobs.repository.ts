@@ -1,5 +1,5 @@
 import { JobStatus } from '@prisma/client';
-import { prisma } from '@/lib/prisma';
+import { prisma } from '@/lib/utils/prisma';
 import { EnqueueJobDTO } from './jobs.schemas';
 
 export async function create(data: EnqueueJobDTO) {

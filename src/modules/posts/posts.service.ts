@@ -1,9 +1,9 @@
-import { ApiError } from "@/lib/api";
-import { slugify } from "@/lib/utils";
+import { ApiError } from "@/lib/api/api";
+import { slugify } from "@/lib/utils/utils";
 import { CreatePostFromRequestDto } from "./posts.schemas";
 import { Post, PostStatus } from '@prisma/client';
 import { PublishedPost, PostSummary } from '@/lib/types';
-import { prisma } from "@/lib/prisma";
+import { prisma } from "@/lib/utils/prisma";
 import { jobsService } from "@/modules/jobs/jobs.service";
 
 const DEFAULT_AUTHOR = "newsletter-app-editor";
