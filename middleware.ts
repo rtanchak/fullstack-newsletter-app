@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
+// TODO add once we have author scope
+// ADD middleware.ts just to pass
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   
