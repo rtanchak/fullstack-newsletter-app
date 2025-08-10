@@ -3,6 +3,7 @@ import { faker } from '@faker-js/faker';
 
 const prisma = new PrismaClient();
 
+const ITEMS_LENGTH = 250;
 async function main() {
   console.log('Starting seed...');
 
@@ -13,7 +14,7 @@ async function main() {
 
   console.log('Creating subscribers...');
   const subscribers = await Promise.all(
-    Array.from({ length: 6 }).map(async (_, i) => {
+    Array.from({ length: ITEMS_LENGTH }).map(async (_, i) => {
       return prisma.subscriber.create({
         data: { 
           email: faker.internet.email(),
@@ -25,9 +26,8 @@ async function main() {
   console.log(`Created ${subscribers.length} subscribers`);
 
   console.log('Creating posts...');
-  const now = new Date();
   const posts = await Promise.all(
-    Array.from({ length: 10 }).map(async (_, i) => {
+    Array.from({ length: ITEMS_LENGTH }).map(async (_, i) => {
       let status: PostStatus;
       let publishedAt: Date | null = null;
       
@@ -88,7 +88,7 @@ async function main() {
 
   console.log('Creating email sends...');
   const emailSends = [];
-  for (let i = 0; i < 5; i++) {
+  for (let i = 0; i < ITEMS_LENGTH; i++) {
     const post = posts[i];
     
     for (const subscriber of subscribers) {
