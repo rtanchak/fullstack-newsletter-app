@@ -28,7 +28,7 @@ services:
       postgres:
         condition: service_healthy
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
       POSTGRES_PRISMA_URL: postgresql://postgres:postgres@postgres:5432/newsletter
       POSTGRES_URL_NON_POOLING: postgresql://postgres:postgres@postgres:5432/newsletter
     command: sh -c "npx prisma migrate deploy && pnpm seed"

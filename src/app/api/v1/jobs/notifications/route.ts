@@ -4,7 +4,7 @@ import { EnqueueNotificationBody } from '@/modules/jobs/jobs.schemas';
 
 /**
  * @swagger
- * /api/v1/jobs/notification:
+ * /api/v1/jobs/notifications:
  *   post:
  *     tags:
  *       - Jobs

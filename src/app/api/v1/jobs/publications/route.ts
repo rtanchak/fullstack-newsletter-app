@@ -4,7 +4,7 @@ import { EnqueuePublicationBody } from '@/modules/jobs/jobs.schemas';
 
 /**
  * @swagger
- * /api/v1/jobs/publication:
+ * /api/v1/jobs/publications:
  *   post:
  *     tags:
  *       - Jobs
