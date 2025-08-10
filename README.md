@@ -2,34 +2,28 @@
 
 A modern, full-stack newsletter application built with Next.js, Material UI, Prisma, and PostgreSQL. This application allows you to create, manage, and publish newsletter posts, handle subscriber management, and schedule automated email notifications.
 
-![Newsletter App](https://via.placeholder.com/800x400?text=Newsletter+App)
-
 ## Features
 
 - **Content Management**
-  - Create, edit, and publish newsletter posts
-  - Schedule posts for future publication
-  - Rich text editing capabilities
+  - Author new posts with a user-friendly interface
+  - View published posts in read-only mode
+  - Schedule posts to be published at a later date
 
 - **Subscriber Management**
-  - User-friendly subscription form
-  - Subscriber database with active/inactive status
-  - Email validation
+  - Sign up for the newsletter with email validation
+  - Manage subscriber database with active/inactive status
 
-- **Automated Jobs**
-  - Scheduled post publication
-  - Automated email notifications
-  - Background job processing
-
-- **API Documentation**
+- **API Integration**
+  - Retrieve blog posts from API including content
   - Comprehensive OpenAPI/Swagger documentation
-  - Self-documenting API endpoints
   - Interactive API explorer
+
+- **Notification System**
+  - Send emails to subscribers upon publishing a post
+  - Background job processing for scheduled tasks
 
 - **Modern UI**
   - Responsive Material UI components
-  - Custom theming
-  - Mobile-friendly design
 
 ## Tech Stack
 
@@ -62,6 +56,8 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
 
 ### Local Development
 
+#### Quick Start (Recommended)
+
 1. Clone the repository
    ```bash
    git clone https://github.com/yourusername/fullstack-newsletter-app.git
@@ -73,10 +69,36 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
    pnpm install
    ```
 
-3. Set up environment variables
+3. Set up database, run migrations, and seed data (all-in-one command)
    ```bash
-   cp .env.example .env.local
-   # Edit .env.local with your database connection details
+   pnpm db:local:seed
+   ```
+   This command:
+   - Starts a PostgreSQL container using Docker Compose
+   - Runs all database migrations
+   - Seeds the database with sample data
+
+4. Start the development server
+   ```bash
+   pnpm dev
+   ```
+
+5. Open [http://localhost:3000](http://localhost:3000) in your browser
+
+#### Manual Setup
+
+1. Clone and install dependencies as above (steps 1-2)
+
+2. Start the PostgreSQL database only
+   ```bash
+   pnpm db:local
+   ```
+
+3. Set up environment variables (if not already created)
+   ```bash
+   # Create .env.local file
+   echo "POSTGRES_PRISMA_URL=postgresql://postgres:postgres@localhost:5432/newsletter" > .env.local
+   echo "POSTGRES_URL_NON_POOLING=postgresql://postgres:postgres@localhost:5432/newsletter" >> .env.local
    ```
 
 4. Run database migrations
@@ -94,16 +116,25 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
    pnpm dev
    ```
 
-7. Open [http://localhost:3000](http://localhost:3000) in your browser
+### Docker Setup (Full Application)
 
-### Docker Setup
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/fullstack-newsletter-app.git
+   cd fullstack-newsletter-app
+   ```
 
-1. Build and start the containers
+2. Build and start all containers
    ```bash
    docker-compose up -d
    ```
 
-2. The application will be available at [http://localhost:3000](http://localhost:3000)
+3. The application will be available at [http://localhost:3000](http://localhost:3000)
+
+4. To seed the database (optional)
+   ```bash
+   docker-compose exec app pnpm seed
+   ```
 
 ## Project Structure
 
@@ -124,6 +155,7 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
 │   │   ├── api/          # API client utilities
 │   │   ├── types/        # TypeScript type definitions
 │   │   └── ui/           # UI utilities
+│   │   └── utils/        # Utility functions
 │   ├── modules/          # Business logic modules
 │   │   ├── jobs/         # Job scheduling and processing
 │   │   ├── notifications/# Email notification system
@@ -159,14 +191,9 @@ The application is containerized and can be deployed to any environment that sup
 - Multi-stage builds for optimized container size
 - Automatic database migrations
 - Production-ready Node.js configuration
-- Database seeding (optional)
 
 ### Production Deployment
-
-```bash
-# Build and deploy the application
-docker-compose -f docker-compose.yml up -d
-```
+TODO
 
 ## Contributing
 

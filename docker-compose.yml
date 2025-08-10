@@ -40,6 +40,8 @@ services:
       target: runner
     container_name: newsletter-app
     depends_on:
+      postgres:
+        condition: service_healthy
       migration:
         condition: service_completed_successfully
     environment:
@@ -49,6 +51,7 @@ services:
       PORT: 3000
     ports:
       - "3000:3000"
+    restart: unless-stopped
     profiles: ["default", "production"]
 
 volumes:

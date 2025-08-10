@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts"
+    "seed": "ts-node --compiler-options '{\"module\":\"CommonJS\"}' prisma/seed.ts",
+    "db:local": "docker-compose -f docker-compose.local.yml up -d",
+    "db:local:seed": "pnpm db:local && sleep 3 && pnpm prisma migrate dev && pnpm seed"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

@@ -9,8 +9,13 @@ type Props = { params: Promise<{ slug: string }> };
 export const revalidate = 60;
 
 export async function generateStaticParams() {
-  const { items } = await getPublishedPosts(1, 1000);
-  return items.map(p => ({ slug: p.slug }));
+  try {
+    const { items } = await getPublishedPosts(1, 1000);
+    return items.map(p => ({ slug: p.slug }));
+  } catch (error) {
+    console.warn('Failed to generate static params for posts:', error);
+    return [];
+  }
 }
 
 export default async function PostPage({ params }: Props) {
