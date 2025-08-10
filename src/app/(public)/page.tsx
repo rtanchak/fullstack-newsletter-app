@@ -3,7 +3,7 @@ import { getPublishedPosts } from "@/modules/posts/posts.service";
 import { Container, Typography, Box, Paper, Link, Button } from "@mui/material";
 import { format } from "date-fns";
 
-const DEFAULT_LIMIT = 20;
+const DEFAULT_LIMIT = 10;
 const MAX_LIMIT = 50;
 
 export const revalidate = 60;

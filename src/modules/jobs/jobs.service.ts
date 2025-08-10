@@ -2,19 +2,19 @@ import { Job, JobType } from '@prisma/client';
 import * as jobsRepository from './jobs.repository';
 import { PublicationStrategy } from './strategies/publication.strategy';
 import { NotificationStrategy } from './strategies/notification.strategy';
-import type { JobStrategy } from './strategies/job.strategy';
 import { ProcessResult } from './jobs.schemas';
+import { StrategyMap } from '@/lib/types';
 
 const DEFAULT_CONCURRENCY = 3;
 const DEFAULT_CHUNK_SIZE = 10;
 
-const strategies: Record<JobType, JobStrategy> = {
+const strategies: StrategyMap = {
   [JobType.POST_PUBLICATION]: new PublicationStrategy(),
   [JobType.POST_EMAIL_NOTIFICATION]: new NotificationStrategy(),
 };
 
 export const jobsService = {
-  enqueuePublication(postId: string, when: Date) {
+  enqueuePublication(postId: string, when: Date): Promise<Job> {
     return jobsRepository.createIfNotExists({
       postId,
       jobType: JobType.POST_PUBLICATION,
@@ -22,7 +22,7 @@ export const jobsService = {
     });
   },
 
-  enqueueEmailNotifications(postId: string, when: Date) {
+  enqueueEmailNotifications(postId: string, when: Date): Promise<Job> {
     return jobsRepository.createIfNotExists({
       postId,
       jobType: JobType.POST_EMAIL_NOTIFICATION,
@@ -30,7 +30,7 @@ export const jobsService = {
     });
   },
 
-  async processDue(now = new Date(), chunkSize = DEFAULT_CHUNK_SIZE, concurrency = DEFAULT_CONCURRENCY) {
+  async processDue(now = new Date(), chunkSize = DEFAULT_CHUNK_SIZE, concurrency = DEFAULT_CONCURRENCY): Promise<ProcessResult> {
     const due = await jobsRepository.getDuePending(now);
     let publishedCount = 0;
     let emailedCount = 0;
@@ -58,7 +58,7 @@ export const jobsService = {
     return ProcessResult.parse(result);
   },
   
-  async processJob(job: Job) {
+  async processJob<T extends Job>(job: T): Promise<boolean> {
     const strategy = strategies[job.jobType];
     if (!strategy) {
       await jobsRepository.markFailed(job.id);

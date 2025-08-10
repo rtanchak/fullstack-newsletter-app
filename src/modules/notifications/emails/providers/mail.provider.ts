@@ -1,3 +1,5 @@
+import { SendEmailOptions, SendEmailResponse } from '@/lib/types/emails';
+
 export interface MailProvider {
-  send(to: string, subject: string, templateId: string): Promise<void>;
+  send(options: SendEmailOptions): Promise<SendEmailResponse>;
 }
