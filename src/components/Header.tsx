@@ -12,6 +12,7 @@ export default function Header() {
   const [subscribeModalOpen, setSubscribeModalOpen] = useState(false);
   
   const isOnNewPostPage = pathname === '/posts/new';
+  const isRootPage = pathname === '/';
   
   const handleCreatePost = () => {
     if (isOnNewPostPage) {
@@ -50,9 +51,29 @@ export default function Header() {
             fullstack-newsletter-app
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
-          <Button 
-              color="primary" 
-              variant="outlined"
+            {!isRootPage && (
+              <Button
+                variant="outlined"
+                component={Link}
+                href="/"
+                sx={{ 
+                  borderRadius: '4px', 
+                  px: 3, 
+                  minWidth: '120px',
+                  color: 'text.primary',
+                  borderColor: 'rgba(0, 0, 0, 0.23)',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                }}
+              >
+                Home
+              </Button>
+            )}
+            <Button
+              color="primary"
+              variant="contained"
               onClick={handleCreatePost}
               sx={{ borderRadius: '4px', px: 3, minWidth: '120px' }}
             >
