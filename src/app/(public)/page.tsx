@@ -1,6 +1,7 @@
 import NextLink from "next/link";
 import { getPublishedPosts } from "@/modules/posts/posts.service";
 import { Container, Typography, Box, Paper, Link, Button } from "@mui/material";
+import PostsPagination from "@/components/PostsPagination";
 import { format } from "date-fns";
 
 const DEFAULT_LIMIT = 10;
@@ -18,7 +19,6 @@ export default async function HomePage({ searchParams }: Props) {
   const limitParam = Array.isArray(params?.limit) ? params?.limit[0] : params?.limit;
 
   const parsedPage = Number(pageParam);
-
   const parsedLimit = Number(limitParam);
   const page = Number.isFinite(parsedPage) && parsedPage > 0 ? parsedPage : 1;
   const limitUnclamped = Number.isFinite(parsedLimit) && parsedLimit > 0 ? parsedLimit : DEFAULT_LIMIT;
@@ -89,44 +89,13 @@ export default async function HomePage({ searchParams }: Props) {
               borderRadius: "4px",
               color: page <= 1 ? "text.disabled" : "primary.main",
             }}
-          >
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              ←
-            </Typography>
-          </Button>
-
-          <Box
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              px: 2,
-              minWidth: "60px",
-              justifyContent: "center",
-            }}
-          >
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {page} / {totalPages}
-            </Typography>
-          </Box>
-
-          <Button
-            component={NextLink}
-            href={`/?page=${Math.min(totalPages, page + 1)}&limit=${limit}`}
-            variant="outlined"
-            size="small"
-            disabled={page >= totalPages}
-            sx={{
-              minWidth: "40px",
-              px: 1,
-              borderRadius: "4px",
-              color: page >= totalPages ? "text.disabled" : "primary.main",
-            }}
-          >
-            <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              →
-            </Typography>
-          </Button>
+          />
         </Box>
+        <PostsPagination
+            page={page}
+            limit={limit}
+            total={total}
+          />
       </Paper>
     </Container>
   );

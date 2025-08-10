@@ -51,7 +51,7 @@ export default function Header() {
             fullstack-newsletter-app
           </Typography>
           <Box sx={{ display: 'flex', gap: 2 }}>
-            {!isRootPage && (
+            {!isRootPage && !isOnNewPostPage && (
               <Button
                 variant="outlined"
                 component={Link}
@@ -71,22 +71,45 @@ export default function Header() {
                 Home
               </Button>
             )}
-            <Button
-              color="primary"
-              variant="contained"
-              onClick={handleCreatePost}
-              sx={{ borderRadius: '4px', px: 3, minWidth: '120px' }}
-            >
-              {isOnNewPostPage ? 'Home' : 'Create Post'}
-            </Button>
-            <Button 
-              color="success" 
-              variant="contained"
-              onClick={handleOpenSubscribeModal}
-              sx={{ borderRadius: '4px', px: 3 }}
-            >
-              Subscribe
-            </Button>
+            {!isOnNewPostPage && (
+              <Button
+                color="primary"
+                variant="contained"
+                onClick={handleCreatePost}
+                sx={{ borderRadius: '4px', px: 3, minWidth: '120px' }}
+              >
+                Create Post
+              </Button>
+            )}
+            {isOnNewPostPage && (
+              <Button
+                variant="outlined"
+                onClick={handleCreatePost}
+                sx={{ 
+                  borderRadius: '4px', 
+                  px: 3, 
+                  minWidth: '120px',
+                  color: 'text.primary',
+                  borderColor: 'rgba(0, 0, 0, 0.23)',
+                  '&:hover': {
+                    borderColor: 'text.primary',
+                    backgroundColor: 'rgba(0, 0, 0, 0.04)'
+                  }
+                }}
+              >
+                Home
+              </Button>
+            )}
+            {!isOnNewPostPage && (
+              <Button 
+                color="success" 
+                variant="contained"
+                onClick={handleOpenSubscribeModal}
+                sx={{ borderRadius: '4px', px: 3 }}
+              >
+                Subscribe
+              </Button>
+            )}
           </Box>
         </Toolbar>
       </AppBar>
