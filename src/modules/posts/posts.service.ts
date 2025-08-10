@@ -61,18 +61,19 @@ export async function publishPost(postId: string) {
   if (!post) throw new ApiError("Post not found", 404, "POST_NOT_FOUND");
 
   if (post.status !== PostStatus.PUBLISHED) {
-    return prisma.post.update({
+    const publishedAt = new Date();
+    const updatedPost = await prisma.post.update({
       where: { id: postId },
-      data: { status: PostStatus.PUBLISHED, publishedAt: new Date() },
+      data: { status: PostStatus.PUBLISHED, publishedAt: publishedAt },
     });
+    await jobsService.enqueueEmailNotifications(postId, publishedAt);
+
+    return updatedPost;
   }
   
   return post;
 }
 
-/**
- * Get posts by their IDs
- */
 export async function getPostsByIds(postIds: string[]) {
   return prisma.post.findMany({
     where: { id: { in: postIds } },
