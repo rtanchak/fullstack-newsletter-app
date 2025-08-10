@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import PostsPagination from "@/components/PostsPagination";
 import { format } from "date-fns";
-import { parsePaginationParams } from '@/lib/pagination';
+import { parsePaginationParams } from '@/lib/ui/pagination';
 
 export const revalidate = 60;
 

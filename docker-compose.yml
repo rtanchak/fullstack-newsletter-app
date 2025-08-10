@@ -17,5 +17,37 @@ services:
       timeout: 5s
       retries: 5
 
+  migration:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: migrate
+    container_name: newsletter-migration
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      POSTGRES_PRISMA_URL: postgresql://postgres:postgres@postgres:5432/newsletter
+    command: npx prisma migrate deploy
+    profiles: ["default", "production"]
+
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runner
+    container_name: newsletter-app
+    depends_on:
+      migration:
+        condition: service_completed_successfully
+    environment:
+      NODE_ENV: production
+      POSTGRES_PRISMA_URL: postgresql://postgres:postgres@postgres:5432/newsletter
+      PORT: 3000
+    ports:
+      - "3000:3000"
+    profiles: ["default", "production"]
+
 volumes:
   postgres-data:
