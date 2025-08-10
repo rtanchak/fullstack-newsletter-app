@@ -14,7 +14,7 @@ interface SubscribeModalProps {
 export function SubscribeModal({ open, onClose }: SubscribeModalProps) {
   const [isSuccess, setIsSuccess] = useState(false);
   const [subscribedEmail, setSubscribedEmail] = useState("");
-  const { mutate, isPending, error } = useSubscribe((email) => {
+  const { mutate } = useSubscribe((email) => {
     setSubscribedEmail(email);
     setIsSuccess(true);
   });

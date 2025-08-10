@@ -31,10 +31,10 @@ async function main() {
       let status: PostStatus;
       let publishedAt: Date | null = null;
       
-      if (i < 5) {
+      if (i < 200) {
         status = PostStatus.PUBLISHED;
         publishedAt = faker.date.past({ years: 0.5 });
-      } else if (i < 8) {
+      } else if (i < 250) {
         status = PostStatus.SCHEDULED;
         publishedAt = faker.date.future({ years: 0.2 });
       } else {
@@ -61,7 +61,7 @@ async function main() {
   const jobs = await Promise.all([
     prisma.job.create({
       data: {
-        postId: posts[7].id,
+        postId: posts[249].id,
         jobType: JobType.POST_PUBLICATION,
         scheduledAt: faker.date.future({ years: 0.1 }),
         status: JobStatus.PENDING,
@@ -69,7 +69,7 @@ async function main() {
     }),
     prisma.job.create({
       data: {
-        postId: posts[5].id,
+        postId: posts[249].id,
         jobType: JobType.POST_EMAIL_NOTIFICATION,
         scheduledAt: faker.date.future({ years: 0.1 }),
         status: JobStatus.PENDING,
@@ -77,7 +77,7 @@ async function main() {
     }),
     prisma.job.create({
       data: {
-        postId: posts[0].id,
+        postId: posts[249].id,
         jobType: JobType.POST_EMAIL_NOTIFICATION,
         scheduledAt: faker.date.past({ years: 0.1 }),
         status: JobStatus.COMPLETED,
@@ -86,28 +86,6 @@ async function main() {
   ]);
   console.log(`Created ${jobs.length} jobs`);
 
-  console.log('Creating email sends...');
-  const emailSends = [];
-  for (let i = 0; i < ITEMS_LENGTH; i++) {
-    const post = posts[i];
-    
-    for (const subscriber of subscribers) {
-      const sentAt = i < 3 ? faker.date.past({ years: 0.1 }) : undefined;
-      
-      emailSends.push(
-        await prisma.emailSend.create({
-          data: {
-            postId: post.id,
-            subscriberId: subscriber.id,
-            sentAt,
-          },
-        })
-      );
-    }
-  }
-  console.log(`Created ${emailSends.length} email sends`);
-
-  console.log('Seed completed successfully!');
 }
 
 main()
