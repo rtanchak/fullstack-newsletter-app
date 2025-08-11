@@ -45,11 +45,12 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
 
 ### How would you deploy the application in a production-ready way?
 
-Host the Next.js app on Vercel with GitHub and CircleCI. Every pull request runs a CircleCI pipeline that installs with pnpm, type‑checks, lints, runs tests, builds the app, and applies Prisma migrations to a staging database using prisma migrate deploy. Use Vercel’s Preview Deployment for each PR to test. When the PR is approved and merged to main, Vercel automatically performs a Staging deployment. Before traffic shifts, the pipeline runs prisma migrate deploy against the production database to keep schema and code in lockstep.
+App is hosted on Vercel with GitHuband CircleCI. Every pull request to the repository triggers a CircleCI pipeline that installs dependencies with pnpm, performs type-checking, linting, and automated tests, builds the application, and applies Prisma migrations to a staging database using prisma migrate deploy. Use snyk to prevent secrets being exposed in the repo. Vercel’s GitHub integration automatically crate a Preview Deployment that we use to test. 
 
-Use tools like sync to prevent secrets being exposed in the repo. CircleCI stores CI‑only tokens and database URLs Vercel stores runtime env vars per environment.
+When a pull request is approved and merged into main, the staging deployment process begins automatically. CircleCI runs the same migration process against the staging database and deploys the build to the Vercel staging environment. Promotion to production is gated through a manual approval process: the pipeline pauses until  reviewer approve the production job. Only after approval does CircleCI run prisma migrate deploy against the production database, followed by a production deployment to Vercel. This ensures database schema and application code remain in lockstep, with changes promoted deliberately rather than automatically.
 
-Scheduled work is handled by Vercel Cron. It calls jobs endpoint to publish due posts and send notifications. Rollbacks are instant by promoting a previous Vercel deployment; migrations follow an expand‑migrate‑contract pattern to avoid downtime (add new columns, backfill, ship reads, then clean up later). Observability comes from Vercel function logs plus structured app logs.
+Scheduled work is handled by Vercel Cron. It calls jobs endpoint to publish due posts and send notifications.
+Email notifications are sent using 3rd-party vendor.
 
 ## Getting Started
 
