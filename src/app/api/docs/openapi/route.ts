@@ -208,6 +208,60 @@ export async function GET() {
           }
         }
       },
+      "/api/v1/jobs": {
+        post: {
+          summary: "Process due jobs",
+          description: "Processes all jobs that are due at the current time",
+          security: [{ CronToken: [] }],
+          responses: {
+            "200": { 
+              description: "Jobs processed successfully",
+              content: {
+                "application/json": {
+                  schema: {
+                    type: "object",
+                    properties: {
+                      success: { type: "boolean" },
+                      result: { $ref: "#/components/schemas/ProcessResult" }
+                    }
+                  },
+                  example: {
+                    success: true,
+                    result: {
+                      publishedCount: 2,
+                      emailedCount: 5
+                    }
+                  }
+                }
+              }
+            },
+            "401": { 
+              description: "Unauthorized",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Error" },
+                  example: {
+                    error: "Unauthorized",
+                    code: "UNAUTHORIZED"
+                  }
+                }
+              }
+            },
+            "500": { 
+              description: "Server error",
+              content: {
+                "application/json": {
+                  schema: { $ref: "#/components/schemas/Error" },
+                  example: {
+                    error: "Internal server error",
+                    code: "SERVER_ERROR"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "/api/v1/jobs/publications": {
         post: {
           summary: "Create publication job",
@@ -355,73 +409,6 @@ export async function GET() {
                       status: "PENDING",
                       createdAt: "2025-08-11T00:33:57Z",
                       updatedAt: "2025-08-11T00:33:57Z"
-                    }
-                  }
-                }
-              }
-            },
-            "400": { 
-              description: "Invalid input",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Error" },
-                  example: {
-                    error: "Invalid request",
-                    code: "VALIDATION_ERROR",
-                    details: { postId: ["Required"] }
-                  }
-                }
-              }
-            },
-            "401": { 
-              description: "Unauthorized",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Error" },
-                  example: {
-                    error: "Unauthorized",
-                    code: "UNAUTHORIZED"
-                  }
-                }
-              }
-            },
-            "500": { 
-              description: "Server error",
-              content: {
-                "application/json": {
-                  schema: { $ref: "#/components/schemas/Error" },
-                  example: {
-                    error: "Internal server error",
-                    code: "SERVER_ERROR"
-                  }
-                }
-              }
-            }
-          }
-        }
-      },
-      "/api/v1/jobs": {
-        post: {
-          summary: "Process due jobs",
-          description: "Processes all jobs that are due at the current time",
-          security: [{ CronToken: [] }],
-          responses: {
-            "200": { 
-              description: "Jobs processed successfully",
-              content: {
-                "application/json": {
-                  schema: {
-                    type: "object",
-                    properties: {
-                      success: { type: "boolean" },
-                      result: { $ref: "#/components/schemas/ProcessResult" }
-                    }
-                  },
-                  example: {
-                    success: true,
-                    result: {
-                      publishedCount: 2,
-                      emailedCount: 5
                     }
                   }
                 }

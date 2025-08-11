@@ -95,6 +95,25 @@ export async function getPublishedPost(slug: string): Promise<PublishedPost | nu
   });
 }
 
+export async function getPublishedPostById(id: string): Promise<PublishedPost | null> {
+  return prisma.post.findFirst({
+    where: {
+      id,
+      status: PostStatus.PUBLISHED,
+      publishedAt: { not: null }
+    },
+    select: {
+      id: true,
+      title: true,
+      slug: true,
+      content: true,
+      publishedAt: true,
+      createdAt: true,
+      updatedAt: true
+    }
+  });
+}
+
 export async function publishPost(postId: string): Promise<Post> {
   const post = await prisma.post.findUnique({ where: { id: postId } });
   if (!post) throw new ApiError("Post not found", 404, "POST_NOT_FOUND");

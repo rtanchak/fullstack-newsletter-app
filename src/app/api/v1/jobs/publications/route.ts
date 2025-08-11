@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { jobsService } from '@/modules/jobs/jobs.service';
 import { EnqueuePublicationBody } from '@/modules/jobs/jobs.schemas';
+import { ApiError } from '@/lib/api/api';
 
 export async function POST(req: Request) {
   try {
@@ -15,9 +16,19 @@ export async function POST(req: Request) {
     }
     
     const { postId, when } = result.data;
-    const job = await jobsService.enqueuePublication(postId, new Date(when));
     
-    return NextResponse.json({ success: true, job });
+    try {
+      const job = await jobsService.enqueuePublication(postId, new Date(when));
+      return NextResponse.json({ success: true, job });
+    } catch (error) {
+      if (error instanceof ApiError) {
+        return NextResponse.json(
+          { error: error.message },
+          { status: error.status }
+        );
+      }
+      throw error;
+    }
   } catch (error) {
     console.error('Failed to enqueue publication job:', error);
     return NextResponse.json(

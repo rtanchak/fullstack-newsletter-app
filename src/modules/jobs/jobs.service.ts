@@ -1,5 +1,7 @@
-import { Job, JobType } from '@prisma/client';
+import { Job, JobType, PostStatus } from '@prisma/client';
 import * as jobsRepository from './jobs.repository';
+import { prisma } from '@/lib/utils/prisma';
+import { ApiError } from '@/lib/api/api';
 import { PublicationStrategy } from './strategies/publication.strategy';
 import { NotificationStrategy } from './strategies/notification.strategy';
 import { ProcessResult } from './jobs.schemas';
@@ -14,7 +16,18 @@ const strategies: StrategyMap = {
 };
 
 export const jobsService = {
-  enqueuePublication(postId: string, when: Date): Promise<Job> {
+  async enqueuePublication(postId: string, when: Date): Promise<Job> {
+    // Check if post exists and is not already published
+    const post = await prisma.post.findUnique({ where: { id: postId } });
+    
+    if (!post) {
+      throw new ApiError('Post not found', 404, 'POST_NOT_FOUND');
+    }
+    
+    if (post.status === PostStatus.PUBLISHED) {
+      throw new ApiError('Post is already published and cannot be scheduled', 400, 'POST_ALREADY_PUBLISHED');
+    }
+    
     return jobsRepository.createIfNotExists({
       postId,
       jobType: JobType.POST_PUBLICATION,

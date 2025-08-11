@@ -4,6 +4,8 @@ import { ApiError } from '@/lib/api/api';
 import { ResendMailProvider } from '@/modules/notifications/emails/providers/3rd-party.provider';
 import { SendEmailOptions, SendEmailResponse, EmailTemplateData, ProcessResult } from '@/lib/types/emails';
 
+const TEMPLATE_ID = 'post_published';
+
 const emailProvider = new ResendMailProvider();
 
 export async function sendEmail(options: SendEmailOptions): Promise<SendEmailResponse> {
@@ -11,7 +13,7 @@ export async function sendEmail(options: SendEmailOptions): Promise<SendEmailRes
 }
 
 export async function sendPostPublishedEmails(postId: string): Promise<ProcessResult> {
-  const post = await postsService.getPublishedPost(postId);
+  const post = await postsService.getPublishedPostById(postId);
   if (!post) throw new ApiError('Post not found or not published', 404, 'POST_NOT_FOUND');
   
   const subscribers = await subscribersService.getActiveSubscribers();
@@ -36,7 +38,7 @@ export async function sendPostPublishedEmails(postId: string): Promise<ProcessRe
   const response = await sendEmail({
     recipients,
     subject: `New Post: ${post.title}`,
-    templateId: 'post_published',
+    templateId: TEMPLATE_ID,
     campaignId,
     templateData
   });
