@@ -2,61 +2,65 @@
 
 A modern, full-stack newsletter application built with Next.js, Material UI, Prisma, and PostgreSQL. This application allows you to create, manage, and publish newsletter posts, handle subscriber management, and schedule automated email notifications.
 
-## Features
-
-- **Content Management**
-  - Author new posts with a user-friendly interface
-  - View published posts in read-only mode
-  - Schedule posts to be published at a later date
-
-- **API Integration**
-  - Retrieve blog posts from API including content
-  - Comprehensive OpenAPI/Swagger documentation
-  - Interactive API explorer
-
-- **Subscribers**
-  - Sign up for the newsletter with email validation
-
-- **Notification System**
-  - Send emails to subscribers upon publishing a post
-  - Background job processing for scheduled tasks
-  - Uses Vercel cron jobs by default, but compatible with any cron system
-
-- **Modern UI**
-  - Responsive Material UI components
-
 ## Tech Stack
-
 - **Frontend**
-  - Next.js 15 (App Router)
-  - React 19
-  - Material UI 7
-  - Axios for API requests
-  - React Query for data fetching
+  Next.js(App Router), React, Material UI, Axios, React Query
 
 - **Backend**
-  - Next.js API Routes
-  - Prisma ORM
-  - PostgreSQL database
-  - Zod for validation
+  Next.js API Routes, Prisma ORM, PostgreSQL database, Zod for validation
 
-- **DevOps**
-  - Docker & Docker Compose
-  - Multi-stage Docker builds
-  - Database migrations
+- **General**
+  TypeScript, Swagger, PNPM, Docker, Docker Compose
+
+## Questions
+### Why This Tech Stack?
+- *TypeScript*: Provides strong typing that catches errors during development rather than runtime.eEnsure consistency in data structures and better understanding of code
+
+- *Next.js*: preformance, server-side rendering(SSR), static content generation(SCG), clear structure, intuitive way to organize routes and enables easy implementation of layouts and nested routes
+
+- *pnpm*: fast package manager, avoid duplications
+
+- *Material UI*: speeds up UI development significaly: awesome ready styles, capability to set up themes, accessible components
+
+- *React Query*:  efficient data fetching, caching, and state management specifically for server state, reducing unnecessary network requests
+
+- *Vercel*: a lot of features, used for speeding up development with creating database and cron. Initially considered for future deployment
+
+- *Prisma ORM*: Selected for its type-safe database access, automatic migrations, schema approach. Prisma is easy to use with a lot if features included, like prisma studio for database management or prisma client generation
+
+- *PostgreSQL*: best releational database. Works perfectly at handling structured data. It has connection pull and a lot of extensions. Here it was used PrismaPostgreSQL created from Vercel to speed up development and then local setup was done with docker-compose and PostgresSQL created from scratch 
+
+- *Swagger*: docs for API
+
+- *Docker*: Ensures consistent development and production environments, simplifying deployment and scaling
+
+### What were some of the trade-offs you made when building this application? Why were these acceptable trade-offs?
+- *Frontend*: use material ui to speed up the development, and it costs runtime performance since the styles are generated on runtime plus it's heavy. 
+
+- *Backend*: Use jobs table for publishing and email notifications. It creates unnecessary complexity, mix things up a bit. I added it as sending emails with api call directly after publishing within the same request is not a proper way(single responsibility, latency). Much better would be to have some message-broker for notifications. Another thing is that we delegate idempotency management of sending emails to 3rd-party vendor. Not sure if that is a terrible thing as we have isolated *emails* module so we do not maitain what was sent. In future may need to think about having a separate table to store some email campaigns. For strategies I used classes although we use functions across project. I'd like to have consistentcy everywhere, 
+
+### Given more time, what improvements or optimizations would you want to add? When would you add them?
+- *Frontend*: add tests, login (we have a placeholder for author scope), rich text editor for posts, filtering, sorting edit + delete posts, draft posts, subscription management
+- *Backend*: add tests(unit, integrations, end-to-end), oauth2.0, add redis for jobs and session management, refactor notifications to use event-drive approach, subscription manegement, performance optimization(query caching, etc)
+
+### How would you deploy the application in a production-ready way?
+
+Host the Next.js app on Vercel with GitHub and CircleCI. Every pull request runs a CircleCI pipeline that installs with pnpm, type‑checks, lints, runs tests, builds the app, and applies Prisma migrations to a staging database using prisma migrate deploy. Use Vercel’s Preview Deployment for each PR to test. When the PR is approved and merged to main, Vercel automatically performs a Staging deployment. Before traffic shifts, the pipeline runs prisma migrate deploy against the production database to keep schema and code in lockstep.
+
+Use tools like sync to prevent secrets being exposed in the repo. CircleCI stores CI‑only tokens and database URLs Vercel stores runtime env vars per environment.
+
+Scheduled work is handled by Vercel Cron. It calls jobs endpoint to publish due posts and send notifications. Rollbacks are instant by promoting a previous Vercel deployment; migrations follow an expand‑migrate‑contract pattern to avoid downtime (add new columns, backfill, ship reads, then clean up later). Observability comes from Vercel function logs plus structured app logs.
 
 ## Getting Started
 
 ### Prerequisites
-
 - Node.js 18+
 - PNPM package manager
 - Docker & Docker Compose (for containerized setup)
-- PostgreSQL (if running locally)
 
 ### Local Development
 
-#### Quick Start (Recommended)
+#### Quick Start
 
 1. Clone the repository
    ```bash
@@ -69,7 +73,14 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
    pnpm install
    ```
 
-3. Set up database, run migrations, and seed data (all-in-one command)
+3. Set up environment variables (if not already created)
+   ```bash
+   # Create .env.local file
+   echo "POSTGRES_PRISMA_URL=postgresql://postgres:postgres@localhost:5432/newsletter" > .env.local
+   echo "POSTGRES_URL_NON_POOLING=postgresql://postgres:postgres@localhost:5432/newsletter" >> .env.local
+   ```
+
+4. Set up database, run migrations, and seed data (all-in-one comman)
    ```bash
    pnpm db:local:seed
    ```
@@ -78,43 +89,12 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
    - Runs all database migrations
    - Seeds the database with sample data
 
-4. Start the development server
+5. Start the development server
    ```bash
    pnpm dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser
-
-#### Manual Setup
-
-1. Clone and install dependencies as above (steps 1-2)
-
-2. Start the PostgreSQL database only
-   ```bash
-   pnpm db:local
-   ```
-
-3. Set up environment variables (if not already created)
-   ```bash
-   # Create .env.local file
-   echo "POSTGRES_PRISMA_URL=postgresql://postgres:postgres@localhost:5432/newsletter" > .env.local
-   echo "POSTGRES_URL_NON_POOLING=postgresql://postgres:postgres@localhost:5432/newsletter" >> .env.local
-   ```
-
-4. Run database migrations
-   ```bash
-   pnpm prisma migrate dev
-   ```
-
-5. Seed the database (optional)
-   ```bash
-   pnpm seed
-   ```
-
-6. Start the development server
-   ```bash
-   pnpm dev
-   ```
+6. Open [http://localhost:3000](http://localhost:3000) in your browser
 
 ### Docker Setup (Full Application)
 
@@ -130,11 +110,6 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
    ```
 
 3. The application will be available at [http://localhost:3000](http://localhost:3000)
-
-4. To seed the database (optional)
-   ```bash
-   docker-compose exec app pnpm seed
-   ```
 
 ## Project Structure
 
@@ -167,7 +142,7 @@ A modern, full-stack newsletter application built with Next.js, Material UI, Pri
 
 ## API Documentation
 
-The API documentation is available at `/api/docs` when the application is running. It provides a comprehensive overview of all available endpoints, request/response schemas, and authentication requirements.
+The API documentation is available at `/api/docs` when the application is running.
 
 ### Key Endpoints
 
@@ -186,25 +161,8 @@ The API documentation is available at `/api/docs` when the application is runnin
 
 ## Deployment
 
-The application is containerized and can be deployed to any environment that supports Docker. The included Docker configuration provides:
+The application is containerized and can be deployed to any environment that supports Docker. The included Docker configuration provides
 
-- Multi-stage builds for optimized container size
-- Automatic database migrations
-- Production-ready Node.js configuration
-
-### Production Deployment
-TODO
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/test-feature`)
-3. Commit your changes using [Conventional Commits](https://www.conventionalcommits.org/) format (`git commit -m 'feat: add test feature'`)
-4. Push to the branch (`git push origin feature/test-feature`)
-5. Open a Pull Request
 
 ## License
-
 This project has no license.
